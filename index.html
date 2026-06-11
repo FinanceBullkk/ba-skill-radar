@@ -68,33 +68,45 @@ input[type=range]{flex:1; accent-color:var(--teal); height:22px;}
 .note{margin-top:22px; font-size:13px; color:var(--muted); border-left:3px solid var(--teal); padding-left:14px; max-width:78ch;}
 .toast{position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--ink); color:#fff; font-size:13px; padding:9px 18px; border-radius:99px; opacity:0; pointer-events:none; transition:opacity .25s;}
 .toast.show{opacity:1;}
+/* Customize mode: dashed outline marks every text that can be edited in place */
+.editing [data-edit], .editing [data-field]{outline:1.5px dashed var(--amber); outline-offset:3px; border-radius:3px; cursor:text; min-width:24px;}
+.editing [data-edit]:focus, .editing [data-field]:focus{outline-style:solid; background:#FFFDF5;}
+.delsk{display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; padding:0; border-radius:6px; color:#B3402A; border-color:#E8C9C2; font-size:11px; flex:none;}
+.delsk:hover{background:#FBEFEC;}
+.panel{display:none; margin-top:16px; border-top:1px solid var(--line); padding-top:14px;}
+.prow{display:flex; align-items:center; gap:14px; flex-wrap:wrap; font-size:13px; color:var(--muted); margin-bottom:10px;}
+.prow label{display:flex; align-items:center; gap:6px; cursor:pointer;}
+input[type=color]{width:34px; height:24px; border:1px solid var(--line); border-radius:6px; background:var(--card); padding:1px; cursor:pointer;}
+.hint{font-size:12.5px; color:var(--muted);}
+.profiles{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;}
+.profiles select{flex:1; min-width:140px; font-family:inherit; font-size:13px; padding:7px 10px; border-radius:9px; border:1px solid var(--line); background:var(--card); color:var(--ink);}
 @media (max-width:860px){ .grid{grid-template-columns:1fr;} .scale{grid-template-columns:repeat(2,1fr);} .rname{flex-basis:140px;} }
 @media (prefers-reduced-motion:reduce){ *{transition:none!important;} }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <p class="eyebrow">CyberLogitec · L&amp;D · BA capability development program</p>
-  <h1>BA skill map — calibrate it together</h1>
-  <p class="sub">The "current" levels are a hypothesis read from the TNA. Drag the sliders to match each team lead's own assessment during the discussion — the chart updates live. Click a skill name to see the TNA evidence and the course module behind it.</p>
+  <p class="eyebrow" data-edit="eyebrow">CyberLogitec · L&amp;D · BA capability development program</p>
+  <h1 data-edit="h1">BA skill map — calibrate it together</h1>
+  <p class="sub" data-edit="sub">The "current" levels are a hypothesis read from the TNA. Drag the sliders to match each team lead's own assessment during the discussion — the chart updates live. Click a skill name to see the TNA evidence and the course module behind it.</p>
 
   <div class="scale" aria-label="Definition of the 1-to-5 proficiency scale">
-    <div><b>1</b>Not familiar with the concept</div>
-    <div><b>2</b>Aware, but practice is inconsistent — everyone does it their own way</div>
-    <div><b>3</b>Can do it with guidance</div>
-    <div><b>4</b>Works independently to a standard / template</div>
-    <div><b>5</b>Can coach others</div>
+    <div data-edit="s1"><b>1</b>Not familiar with the concept</div>
+    <div data-edit="s2"><b>2</b>Aware, but practice is inconsistent — everyone does it their own way</div>
+    <div data-edit="s3"><b>3</b>Can do it with guidance</div>
+    <div data-edit="s4"><b>4</b>Works independently to a standard / template</div>
+    <div data-edit="s5"><b>5</b>Can coach others</div>
   </div>
 
   <div class="bok" aria-label="Coverage of the six BABOK v3 knowledge areas">
-    <p class="boktitle">Reference framework: BABOK Guide v3 (IIBA) — the six knowledge areas of a complete BA</p>
+    <p class="boktitle" data-edit="boktitle">Reference framework: BABOK Guide v3 (IIBA) — the six knowledge areas of a complete BA</p>
     <div class="bokrow">
-      <span class="boka full">Elicitation &amp; collaboration · M1, M6</span>
-      <span class="boka full">Requirements analysis &amp; design definition · M2, M3</span>
-      <span class="boka full">Requirements life cycle management · M5</span>
-      <span class="boka part">Solution evaluation · M4 (UAT portion)</span>
-      <span class="boka out">Strategy analysis · phase 2 roadmap</span>
-      <span class="boka out">BA planning &amp; monitoring · phase 2 roadmap</span>
+      <span class="boka full" data-edit="bok1">Elicitation &amp; collaboration · M1, M6</span>
+      <span class="boka full" data-edit="bok2">Requirements analysis &amp; design definition · M2, M3</span>
+      <span class="boka full" data-edit="bok3">Requirements life cycle management · M5</span>
+      <span class="boka part" data-edit="bok4">Solution evaluation · M4 (UAT portion)</span>
+      <span class="boka out" data-edit="bok5">Strategy analysis · phase 2 roadmap</span>
+      <span class="boka out" data-edit="bok6">BA planning &amp; monitoring · phase 2 roadmap</span>
     </div>
   </div>
 
@@ -110,11 +122,33 @@ input[type=range]{flex:1; accent-color:var(--teal); height:22px;}
       <div class="actions">
         <button class="primary" id="png">Download PNG</button>
         <button id="copy">Copy scores</button>
+        <button id="edit">Customize</button>
+        <button id="exp">Export JSON</button>
+        <button id="imp">Import JSON</button>
         <button id="reset">Reset to defaults</button>
+        <input type="file" id="impFile" accept=".json,application/json" hidden>
+      </div>
+      <div class="panel" id="panel" aria-label="Customization settings">
+        <div class="prow">
+          <label>Target color <input type="color" id="cAccent" value="#0E7A6A"></label>
+          <label>Current color <input type="color" id="cCur" value="#7A8694"></label>
+        </div>
+        <div class="prow">
+          <label><input type="checkbox" id="vScale" checked> Scale strip</label>
+          <label><input type="checkbox" id="vBok" checked> BABOK strip</label>
+          <label><input type="checkbox" id="vNote" checked> Methodology note</label>
+        </div>
+        <div class="prow"><button id="addSk">+ Add skill</button></div>
+        <p class="hint">Click any dashed-outlined text to edit it in place. Changes save automatically in this browser — use Export JSON to share a configuration with someone else.</p>
       </div>
     </div>
 
     <div class="card">
+      <div class="profiles">
+        <select id="profSel" aria-label="Team profile"><option value="">— Team profile —</option></select>
+        <button id="profSave">Save as…</button>
+        <button id="profDel">Delete</button>
+      </div>
       <div class="mode" role="tablist" aria-label="Choose which line to adjust">
         <button class="on" id="mCur" type="button">Adjust current</button>
         <button id="mTg" type="button">Adjust target</button>
@@ -123,7 +157,7 @@ input[type=range]{flex:1; accent-color:var(--teal); height:22px;}
     </div>
   </div>
 
-  <p class="note"><strong>Methodology note:</strong> the seven skill axes are drawn from the international standard BABOK Guide v3 (IIBA) — covering 4 of 6 knowledge areas and 3 of 6 underlying competencies, the ones relevant to BAs working in a product support environment. The remaining two areas (Strategy Analysis, BA Planning &amp; Monitoring) belong to the senior-BA level and sit on the phase 2 roadmap. Starting scores are inferred from the language of the TNA (e.g. "no consistent methodology or template" → 1.5; "has gained practical experience" → 3) and should be calibrated against team leads' assessments or a self-assessment survey. The default target is level 4 — works independently to a template — because every course module ends with a standard template plus hands-on practice using the team's real tickets. Any scores you adjust are saved automatically in this browser.</p>
+  <p class="note" data-edit="note"><strong>Methodology note:</strong> the seven skill axes are drawn from the international standard BABOK Guide v3 (IIBA) — covering 4 of 6 knowledge areas and 3 of 6 underlying competencies, the ones relevant to BAs working in a product support environment. The remaining two areas (Strategy Analysis, BA Planning &amp; Monitoring) belong to the senior-BA level and sit on the phase 2 roadmap. Starting scores are inferred from the language of the TNA (e.g. "no consistent methodology or template" → 1.5; "has gained practical experience" → 3) and should be calibrated against team leads' assessments or a self-assessment survey. The default target is level 4 — works independently to a template — because every course module ends with a standard template plus hands-on practice using the team's real tickets. Any scores you adjust are saved automatically in this browser.</p>
 </div>
 <div class="toast" id="toast">Copied</div>
 
@@ -158,16 +192,29 @@ const DEFAULTS = [
   tna:'TNA #8: stronger collaboration with Developers and QA is required so requirements are correctly understood, properly implemented and thoroughly tested.',
   mod:'Module 6 — Dev/QA Collaboration (3.75h): the Dev and QA mindset, handling "can\u2019t be done / requirement unclear" situations, handover checklist, full-cycle role-play to close the course.'}
 ];
-const KEY = 'ba-skill-radar-en-v1';
-let skills = JSON.parse(JSON.stringify(DEFAULTS));
+const THEME_DEF = {accent:'#0E7A6A', current:'#7A8694', showScale:true, showBok:true, showNote:true};
+const KEY = 'ba-skill-radar-en-v2', OLDKEY = 'ba-skill-radar-en-v1';
+const clone = o => JSON.parse(JSON.stringify(o));
+// Full app state: skill content + scores, theme, page-text overrides, named team profiles
+let state = {skills: clone(DEFAULTS), theme: clone(THEME_DEF), texts: {}, profiles: {}};
 try{
   const saved = localStorage.getItem(KEY);
-  if(saved){ const s = JSON.parse(saved);
-    if(Array.isArray(s) && s.length === skills.length){ s.forEach((v,i)=>{ skills[i].cur = v.cur; skills[i].tg = v.tg; }); } }
+  if(saved){
+    const s = JSON.parse(saved);
+    if(s && Array.isArray(s.skills) && s.skills.length)
+      state = {skills: s.skills, theme: {...clone(THEME_DEF), ...(s.theme||{})}, texts: s.texts||{}, profiles: s.profiles||{}};
+  }else{
+    const old = localStorage.getItem(OLDKEY); // migrate scores saved by the old v1 schema
+    if(old){ const o = JSON.parse(old);
+      if(Array.isArray(o) && o.length === state.skills.length) o.forEach((v,i)=>{ state.skills[i].cur = v.cur; state.skills[i].tg = v.tg; }); }
+  }
 }catch(e){}
-function persist(){ try{ localStorage.setItem(KEY, JSON.stringify(skills.map(s=>({cur:s.cur, tg:s.tg})))); }catch(e){} }
+let skills = state.skills;
+function persist(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function hexA(hex,a){ const n = parseInt(hex.slice(1),16); return 'rgba('+(n>>16&255)+','+(n>>8&255)+','+(n&255)+','+a+')'; }
 
-let mode = 'cur';
+let mode = 'cur', editing = false;
 const chart = new Chart(document.getElementById('radar'), {
   type:'radar',
   data:{ labels: skills.map(s=>s.n), datasets:[
@@ -183,21 +230,33 @@ const chart = new Chart(document.getElementById('radar'), {
 
 const rows = document.getElementById('rows');
 function fmt(v){ return Number(v).toFixed(1); }
+function syncChart(anim){
+  chart.data.labels = skills.map(s=>s.n);
+  chart.data.datasets[0].data = skills.map(s=>s.cur);
+  chart.data.datasets[1].data = skills.map(s=>s.tg);
+  chart.update(anim===false?'none':undefined);
+}
 function render(){
   rows.innerHTML = '';
+  const ce = editing ? ' contenteditable="true"' : '';
   skills.forEach((s,i)=>{
-    const row = document.createElement('div'); row.className = 'row'; row.id = 'row'+i;
+    const row = document.createElement('div'); row.className = 'row'+(editing?' open':''); row.id = 'row'+i;
+    // In customize mode the name becomes editable and details stay open; otherwise it toggles the accordion
+    const name = editing
+      ? '<span class="rname"><button class="delsk" type="button" data-del="'+i+'" title="Remove this skill">✕</button><span data-field="n" data-i="'+i+'"'+ce+'>'+esc(s.n)+'</span></span>'
+      : '<button class="rname" type="button" aria-expanded="false" data-toggle="'+i+'"><span class="chev">▶</span>'+esc(s.n)+'</button>';
     row.innerHTML =
-      '<div class="rowtop">'
-      + '<button class="rname" type="button" aria-expanded="false" data-toggle="'+i+'"><span class="chev">▶</span>'+s.n+'</button>'
-      + '<input type="range" min="1" max="5" step="0.5" value="'+(mode==='cur'?s.cur:s.tg)+'" data-i="'+i+'" aria-label="'+(mode==='cur'?'Current':'Target')+' level for '+s.n+'">'
+      '<div class="rowtop">' + name
+      + '<input type="range" min="1" max="5" step="0.5" value="'+(mode==='cur'?s.cur:s.tg)+'" data-i="'+i+'" aria-label="'+(mode==='cur'?'Current':'Target')+' level for '+esc(s.n)+'">'
       + '<span class="val mono"><span class="cur" id="c'+i+'">'+fmt(s.cur)+'</span> → <span class="tg" id="t'+i+'">'+fmt(s.tg)+'</span></span>'
       + '</div>'
-      + '<div class="detail"><p><span class="tag bok">BABOK v3 anchor</span>'+s.bok+'</p><p><span class="tag tna">TNA evidence</span>'+s.tna+'</p><p><span class="tag syl">Syllabus</span>'+s.mod+'</p></div>';
+      + '<div class="detail">'
+      + '<p><span class="tag bok">BABOK v3 anchor</span><span data-field="bok" data-i="'+i+'"'+ce+'>'+esc(s.bok)+'</span></p>'
+      + '<p><span class="tag tna">TNA evidence</span><span data-field="tna" data-i="'+i+'"'+ce+'>'+esc(s.tna)+'</span></p>'
+      + '<p><span class="tag syl">Syllabus</span><span data-field="mod" data-i="'+i+'"'+ce+'>'+esc(s.mod)+'</span></p></div>';
     rows.appendChild(row);
   });
 }
-render();
 
 rows.addEventListener('input', e=>{
   if(e.target.type!=='range') return;
@@ -209,12 +268,38 @@ rows.addEventListener('input', e=>{
   persist();
 });
 rows.addEventListener('click', e=>{
+  const del = e.target.closest('[data-del]');
+  if(del){
+    const i = +del.dataset.del;
+    if(confirm('Remove "'+skills[i].n+'" from the radar?')){ skills.splice(i,1); syncChart(); render(); persist(); }
+    return;
+  }
   const btn = e.target.closest('[data-toggle]');
   if(!btn) return;
   const row = document.getElementById('row'+btn.dataset.toggle);
   row.classList.toggle('open');
   btn.setAttribute('aria-expanded', row.classList.contains('open'));
 });
+// Persist in-place edits of skill fields when focus leaves the edited element
+rows.addEventListener('focusout', e=>{
+  const el = e.target.closest('[data-field]'); if(!el) return;
+  const i = +el.dataset.i, f = el.dataset.field;
+  if(!skills[i]) return;
+  skills[i][f] = el.textContent.trim();
+  if(f==='n'){ chart.data.labels[i] = skills[i].n; chart.update('none'); }
+  persist();
+});
+// Persist in-place edits of page texts (headings, scale strip, BABOK chips, note)
+document.addEventListener('focusout', e=>{
+  const el = e.target.closest('[data-edit]'); if(!el) return;
+  state.texts[el.dataset.edit] = el.innerHTML; persist();
+});
+function applyTexts(){
+  for(const k in state.texts){
+    const el = document.querySelector('[data-edit="'+k+'"]');
+    if(el) el.innerHTML = state.texts[k];
+  }
+}
 
 const mCur = document.getElementById('mCur'), mTg = document.getElementById('mTg');
 function setMode(m){
@@ -249,14 +334,111 @@ document.getElementById('copy').addEventListener('click', ()=>{
   const txt = skills.map(s=>s.n+': '+fmt(s.cur)+' → '+fmt(s.tg)).join('\n');
   navigator.clipboard.writeText(txt).then(()=>toast('Scores copied')).catch(()=>toast('Clipboard blocked by browser'));
 });
-document.getElementById('reset').addEventListener('click', ()=>{
-  skills = JSON.parse(JSON.stringify(DEFAULTS));
-  chart.data.datasets[0].data = skills.map(s=>s.cur);
-  chart.data.datasets[1].data = skills.map(s=>s.tg);
-  chart.update();
-  render(); setMode(mode); persist();
-  toast('Reset to default scores');
+
+// ----- Customize mode -----
+const editBtn = document.getElementById('edit'), panel = document.getElementById('panel');
+function setEditing(on){
+  editing = on;
+  document.body.classList.toggle('editing', on);
+  editBtn.textContent = on ? 'Done' : 'Customize';
+  panel.style.display = on ? 'block' : 'none';
+  document.querySelectorAll('[data-edit]').forEach(el=>{
+    if(on) el.setAttribute('contenteditable','true'); else el.removeAttribute('contenteditable');
+  });
+  render(); setMode(mode);
+}
+editBtn.addEventListener('click', ()=>setEditing(!editing));
+document.getElementById('addSk').addEventListener('click', ()=>{
+  skills.push({n:'New skill', cur:2, tg:4, bok:'', tna:'', mod:''});
+  syncChart(); render(); persist();
+  const el = rows.querySelector('.row:last-child [data-field="n"]'); if(el) el.focus();
 });
+
+// ----- Theme: line colors + section visibility -----
+const cAccent = document.getElementById('cAccent'), cCur = document.getElementById('cCur');
+const vScale = document.getElementById('vScale'), vBok = document.getElementById('vBok'), vNote = document.getElementById('vNote');
+function applyTheme(){
+  const t = state.theme, r = document.documentElement.style;
+  r.setProperty('--teal', t.accent);
+  r.setProperty('--teal-deep', 'color-mix(in srgb, '+t.accent+' 80%, black)');
+  r.setProperty('--teal-soft', 'color-mix(in srgb, '+t.accent+' 12%, white)');
+  r.setProperty('--gray', t.current);
+  chart.data.datasets[1].borderColor = t.accent;  chart.data.datasets[1].backgroundColor = hexA(t.accent, 0.14);
+  chart.data.datasets[0].borderColor = t.current; chart.data.datasets[0].backgroundColor = hexA(t.current, 0.12);
+  chart.update('none');
+  document.querySelector('.scale').style.display = t.showScale ? '' : 'none';
+  document.querySelector('.bok').style.display   = t.showBok   ? '' : 'none';
+  document.querySelector('.note').style.display  = t.showNote  ? '' : 'none';
+  cAccent.value = t.accent; cCur.value = t.current;
+  vScale.checked = t.showScale; vBok.checked = t.showBok; vNote.checked = t.showNote;
+}
+cAccent.addEventListener('input', e=>{ state.theme.accent  = e.target.value; applyTheme(); persist(); });
+cCur.addEventListener('input',   e=>{ state.theme.current = e.target.value; applyTheme(); persist(); });
+vScale.addEventListener('change', e=>{ state.theme.showScale = e.target.checked; applyTheme(); persist(); });
+vBok.addEventListener('change',   e=>{ state.theme.showBok   = e.target.checked; applyTheme(); persist(); });
+vNote.addEventListener('change',  e=>{ state.theme.showNote  = e.target.checked; applyTheme(); persist(); });
+
+// ----- Team profiles: named score sets stored alongside the config -----
+const profSel = document.getElementById('profSel');
+function refreshProfiles(){
+  const cur = profSel.value;
+  profSel.innerHTML = '<option value="">— Team profile —</option>'
+    + Object.keys(state.profiles).map(n=>'<option'+(n===cur?' selected':'')+'>'+esc(n)+'</option>').join('');
+}
+document.getElementById('profSave').addEventListener('click', ()=>{
+  const name = prompt('Profile name (e.g. Team A):'); if(!name) return;
+  state.profiles[name.trim()] = skills.map(s=>({cur:s.cur, tg:s.tg}));
+  persist(); refreshProfiles(); profSel.value = name.trim();
+  toast('Profile "'+name.trim()+'" saved');
+});
+profSel.addEventListener('change', ()=>{
+  const p = state.profiles[profSel.value]; if(!p) return;
+  if(p.length !== skills.length){ toast('Profile has a different skill count — not applied'); return; }
+  p.forEach((v,i)=>{ skills[i].cur = v.cur; skills[i].tg = v.tg; });
+  syncChart(false); render(); setMode(mode); persist();
+  toast('Profile "'+profSel.value+'" loaded');
+});
+document.getElementById('profDel').addEventListener('click', ()=>{
+  const n = profSel.value; if(!n) return;
+  if(!confirm('Delete profile "'+n+'"?')) return;
+  delete state.profiles[n]; persist(); refreshProfiles();
+  toast('Profile deleted');
+});
+
+// ----- Export / import the whole configuration as JSON -----
+document.getElementById('exp').addEventListener('click', ()=>{
+  const a = document.createElement('a');
+  a.download = 'ba-skill-radar-config.json';
+  a.href = 'data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(state, null, 2));
+  a.click(); toast('Configuration exported');
+});
+const impFile = document.getElementById('impFile');
+document.getElementById('imp').addEventListener('click', ()=>impFile.click());
+impFile.addEventListener('change', ()=>{
+  const f = impFile.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ()=>{
+    try{
+      const s = JSON.parse(r.result);
+      if(!s || !Array.isArray(s.skills) || !s.skills.length || !s.skills.every(k=>k && typeof k.n==='string')) throw new Error('bad config');
+      state = {skills: s.skills, theme: {...clone(THEME_DEF), ...(s.theme||{})}, texts: s.texts||{}, profiles: s.profiles||{}};
+      skills = state.skills;
+      applyTexts(); applyTheme(); syncChart(); render(); setMode(mode); refreshProfiles(); persist();
+      toast('Configuration imported');
+    }catch(err){ toast('Invalid configuration file'); }
+    impFile.value = '';
+  };
+  r.readAsText(f);
+});
+
+document.getElementById('reset').addEventListener('click', ()=>{
+  if(!confirm('Restore default content, scores and appearance? Saved team profiles are kept.')) return;
+  state = {skills: clone(DEFAULTS), theme: clone(THEME_DEF), texts: {}, profiles: state.profiles};
+  persist(); location.reload(); // reload restores the default page texts
+});
+
+// ----- Init -----
+applyTexts(); applyTheme(); render(); refreshProfiles();
 </script>
 </body>
 </html>

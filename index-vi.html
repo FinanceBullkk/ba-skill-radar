@@ -68,33 +68,45 @@ input[type=range]{flex:1; accent-color:var(--teal); height:22px;}
 .note{margin-top:22px; font-size:13px; color:var(--muted); border-left:3px solid var(--teal); padding-left:14px; max-width:78ch;}
 .toast{position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--ink); color:#fff; font-size:13px; padding:9px 18px; border-radius:99px; opacity:0; pointer-events:none; transition:opacity .25s;}
 .toast.show{opacity:1;}
+/* Chế độ tùy chỉnh: viền đứt đánh dấu mọi đoạn chữ sửa được tại chỗ */
+.editing [data-edit], .editing [data-field]{outline:1.5px dashed var(--amber); outline-offset:3px; border-radius:3px; cursor:text; min-width:24px;}
+.editing [data-edit]:focus, .editing [data-field]:focus{outline-style:solid; background:#FFFDF5;}
+.delsk{display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; padding:0; border-radius:6px; color:#B3402A; border-color:#E8C9C2; font-size:11px; flex:none;}
+.delsk:hover{background:#FBEFEC;}
+.panel{display:none; margin-top:16px; border-top:1px solid var(--line); padding-top:14px;}
+.prow{display:flex; align-items:center; gap:14px; flex-wrap:wrap; font-size:13px; color:var(--muted); margin-bottom:10px;}
+.prow label{display:flex; align-items:center; gap:6px; cursor:pointer;}
+input[type=color]{width:34px; height:24px; border:1px solid var(--line); border-radius:6px; background:var(--card); padding:1px; cursor:pointer;}
+.hint{font-size:12.5px; color:var(--muted);}
+.profiles{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;}
+.profiles select{flex:1; min-width:140px; font-family:inherit; font-size:13px; padding:7px 10px; border-radius:9px; border:1px solid var(--line); background:var(--card); color:var(--ink);}
 @media (max-width:860px){ .grid{grid-template-columns:1fr;} .scale{grid-template-columns:repeat(2,1fr);} .rname{flex-basis:140px;} }
 @media (prefers-reduced-motion:reduce){ *{transition:none!important;} }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <p class="eyebrow">CyberLogitec · L&amp;D · Chương trình nâng cao năng lực BA</p>
-  <h1>Bản đồ kỹ năng BA — hiệu chỉnh cùng team</h1>
-  <p class="sub">Mức "hiện tại" là giả thuyết đọc từ bản TNA. Kéo thanh trượt theo đánh giá của team lead trong buổi trao đổi — biểu đồ cập nhật ngay. Bấm vào tên kỹ năng để xem căn cứ TNA và module khóa học tương ứng.</p>
+  <p class="eyebrow" data-edit="eyebrow">CyberLogitec · L&amp;D · Chương trình nâng cao năng lực BA</p>
+  <h1 data-edit="h1">Bản đồ kỹ năng BA — hiệu chỉnh cùng team</h1>
+  <p class="sub" data-edit="sub">Mức "hiện tại" là giả thuyết đọc từ bản TNA. Kéo thanh trượt theo đánh giá của team lead trong buổi trao đổi — biểu đồ cập nhật ngay. Bấm vào tên kỹ năng để xem căn cứ TNA và module khóa học tương ứng.</p>
 
   <div class="scale" aria-label="Định nghĩa thang điểm 1 đến 5">
-    <div><b>1</b>Chưa biết khái niệm</div>
-    <div><b>2</b>Biết nhưng làm chưa chuẩn, mỗi người một kiểu</div>
-    <div><b>3</b>Làm được khi có hướng dẫn</div>
-    <div><b>4</b>Làm độc lập theo chuẩn / template</div>
-    <div><b>5</b>Hướng dẫn lại được người khác</div>
+    <div data-edit="s1"><b>1</b>Chưa biết khái niệm</div>
+    <div data-edit="s2"><b>2</b>Biết nhưng làm chưa chuẩn, mỗi người một kiểu</div>
+    <div data-edit="s3"><b>3</b>Làm được khi có hướng dẫn</div>
+    <div data-edit="s4"><b>4</b>Làm độc lập theo chuẩn / template</div>
+    <div data-edit="s5"><b>5</b>Hướng dẫn lại được người khác</div>
   </div>
 
   <div class="bok" aria-label="Mức độ bao phủ 6 knowledge areas của BABOK v3">
-    <p class="boktitle">Khung tham chiếu: BABOK Guide v3 (IIBA) — 6 knowledge areas của một BA hoàn thiện</p>
+    <p class="boktitle" data-edit="boktitle">Khung tham chiếu: BABOK Guide v3 (IIBA) — 6 knowledge areas của một BA hoàn thiện</p>
     <div class="bokrow">
-      <span class="boka full">Elicitation &amp; collaboration · M1, M6</span>
-      <span class="boka full">Requirements analysis &amp; design definition · M2, M3</span>
-      <span class="boka full">Requirements life cycle management · M5</span>
-      <span class="boka part">Solution evaluation · M4 (phần UAT)</span>
-      <span class="boka out">Strategy analysis · giai đoạn 2</span>
-      <span class="boka out">BA planning &amp; monitoring · giai đoạn 2</span>
+      <span class="boka full" data-edit="bok1">Elicitation &amp; collaboration · M1, M6</span>
+      <span class="boka full" data-edit="bok2">Requirements analysis &amp; design definition · M2, M3</span>
+      <span class="boka full" data-edit="bok3">Requirements life cycle management · M5</span>
+      <span class="boka part" data-edit="bok4">Solution evaluation · M4 (phần UAT)</span>
+      <span class="boka out" data-edit="bok5">Strategy analysis · giai đoạn 2</span>
+      <span class="boka out" data-edit="bok6">BA planning &amp; monitoring · giai đoạn 2</span>
     </div>
   </div>
 
@@ -110,11 +122,33 @@ input[type=range]{flex:1; accent-color:var(--teal); height:22px;}
       <div class="actions">
         <button class="primary" id="png">Tải ảnh PNG</button>
         <button id="copy">Sao chép bộ số</button>
+        <button id="edit">Tùy chỉnh</button>
+        <button id="exp">Xuất JSON</button>
+        <button id="imp">Nhập JSON</button>
         <button id="reset">Đặt lại mặc định</button>
+        <input type="file" id="impFile" accept=".json,application/json" hidden>
+      </div>
+      <div class="panel" id="panel" aria-label="Cài đặt tùy chỉnh">
+        <div class="prow">
+          <label>Màu mục tiêu <input type="color" id="cAccent" value="#0E7A6A"></label>
+          <label>Màu hiện tại <input type="color" id="cCur" value="#7A8694"></label>
+        </div>
+        <div class="prow">
+          <label><input type="checkbox" id="vScale" checked> Thang điểm</label>
+          <label><input type="checkbox" id="vBok" checked> Dải BABOK</label>
+          <label><input type="checkbox" id="vNote" checked> Ghi chú phương pháp</label>
+        </div>
+        <div class="prow"><button id="addSk">+ Thêm kỹ năng</button></div>
+        <p class="hint">Bấm vào bất kỳ đoạn chữ có viền đứt để sửa trực tiếp. Thay đổi tự lưu trong trình duyệt này — dùng Xuất JSON để chia sẻ cấu hình cho người khác.</p>
       </div>
     </div>
 
     <div class="card">
+      <div class="profiles">
+        <select id="profSel" aria-label="Hồ sơ team"><option value="">— Hồ sơ team —</option></select>
+        <button id="profSave">Lưu thành…</button>
+        <button id="profDel">Xóa</button>
+      </div>
       <div class="mode" role="tablist" aria-label="Chọn đường đang chỉnh">
         <button class="on" id="mCur" type="button">Chỉnh mức hiện tại</button>
         <button id="mTg" type="button">Chỉnh mục tiêu</button>
@@ -123,7 +157,7 @@ input[type=range]{flex:1; accent-color:var(--teal); height:22px;}
     </div>
   </div>
 
-  <p class="note"><strong>Ghi chú phương pháp:</strong> bộ 7 trục kỹ năng được chọn từ khung chuẩn quốc tế BABOK Guide v3 (IIBA) — bao gồm 4/6 knowledge areas và 3/6 năng lực nền phù hợp với BA trong môi trường product support; 2 vùng còn lại (Strategy Analysis, BA Planning &amp; Monitoring) thuộc cấp độ senior BA và nằm trong lộ trình giai đoạn 2. Điểm xuất phát được suy luận từ ngôn ngữ của bản TNA (ví dụ: "chưa có phương pháp/template" → mức 1.5; "đã có kinh nghiệm thực tế" → mức 3) và cần được hiệu chỉnh bằng đánh giá của team lead hoặc khảo sát tự đánh giá. Mục tiêu mặc định là mức 4 — làm độc lập theo template — vì mỗi module của khóa học đều kết thúc bằng một template chuẩn kèm bài thực hành trên ticket thật của team. Số liệu bạn chỉnh được tự lưu trong trình duyệt này.</p>
+  <p class="note" data-edit="note"><strong>Ghi chú phương pháp:</strong> bộ 7 trục kỹ năng được chọn từ khung chuẩn quốc tế BABOK Guide v3 (IIBA) — bao gồm 4/6 knowledge areas và 3/6 năng lực nền phù hợp với BA trong môi trường product support; 2 vùng còn lại (Strategy Analysis, BA Planning &amp; Monitoring) thuộc cấp độ senior BA và nằm trong lộ trình giai đoạn 2. Điểm xuất phát được suy luận từ ngôn ngữ của bản TNA (ví dụ: "chưa có phương pháp/template" → mức 1.5; "đã có kinh nghiệm thực tế" → mức 3) và cần được hiệu chỉnh bằng đánh giá của team lead hoặc khảo sát tự đánh giá. Mục tiêu mặc định là mức 4 — làm độc lập theo template — vì mỗi module của khóa học đều kết thúc bằng một template chuẩn kèm bài thực hành trên ticket thật của team. Số liệu bạn chỉnh được tự lưu trong trình duyệt này.</p>
 </div>
 <div class="toast" id="toast">Đã sao chép</div>
 
@@ -158,16 +192,29 @@ const DEFAULTS = [
   tna:'TNA #8: cần phối hợp chặt chẽ hơn với Developer và QA để requirement được hiểu đúng, làm đúng và test đầy đủ.',
   mod:'Module 6 — Dev/QA Collaboration (3.75h): mindset của Dev và QA, xử lý tình huống "không làm được / requirement không rõ", handover checklist, role-play full cycle cuối khóa.'}
 ];
-const KEY = 'ba-skill-radar-v1';
-let skills = JSON.parse(JSON.stringify(DEFAULTS));
+const THEME_DEF = {accent:'#0E7A6A', current:'#7A8694', showScale:true, showBok:true, showNote:true};
+const KEY = 'ba-skill-radar-v2', OLDKEY = 'ba-skill-radar-v1';
+const clone = o => JSON.parse(JSON.stringify(o));
+// Toàn bộ state: nội dung + điểm kỹ năng, giao diện, text đã sửa, hồ sơ team
+let state = {skills: clone(DEFAULTS), theme: clone(THEME_DEF), texts: {}, profiles: {}};
 try{
   const saved = localStorage.getItem(KEY);
-  if(saved){ const s = JSON.parse(saved);
-    if(Array.isArray(s) && s.length === skills.length){ s.forEach((v,i)=>{ skills[i].cur = v.cur; skills[i].tg = v.tg; }); } }
+  if(saved){
+    const s = JSON.parse(saved);
+    if(s && Array.isArray(s.skills) && s.skills.length)
+      state = {skills: s.skills, theme: {...clone(THEME_DEF), ...(s.theme||{})}, texts: s.texts||{}, profiles: s.profiles||{}};
+  }else{
+    const old = localStorage.getItem(OLDKEY); // chuyển điểm đã lưu từ schema v1 cũ
+    if(old){ const o = JSON.parse(old);
+      if(Array.isArray(o) && o.length === state.skills.length) o.forEach((v,i)=>{ state.skills[i].cur = v.cur; state.skills[i].tg = v.tg; }); }
+  }
 }catch(e){}
-function persist(){ try{ localStorage.setItem(KEY, JSON.stringify(skills.map(s=>({cur:s.cur, tg:s.tg})))); }catch(e){} }
+let skills = state.skills;
+function persist(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function hexA(hex,a){ const n = parseInt(hex.slice(1),16); return 'rgba('+(n>>16&255)+','+(n>>8&255)+','+(n&255)+','+a+')'; }
 
-let mode = 'cur';
+let mode = 'cur', editing = false;
 const chart = new Chart(document.getElementById('radar'), {
   type:'radar',
   data:{ labels: skills.map(s=>s.n), datasets:[
@@ -183,21 +230,33 @@ const chart = new Chart(document.getElementById('radar'), {
 
 const rows = document.getElementById('rows');
 function fmt(v){ return Number(v).toFixed(1); }
+function syncChart(anim){
+  chart.data.labels = skills.map(s=>s.n);
+  chart.data.datasets[0].data = skills.map(s=>s.cur);
+  chart.data.datasets[1].data = skills.map(s=>s.tg);
+  chart.update(anim===false?'none':undefined);
+}
 function render(){
   rows.innerHTML = '';
+  const ce = editing ? ' contenteditable="true"' : '';
   skills.forEach((s,i)=>{
-    const row = document.createElement('div'); row.className = 'row'; row.id = 'row'+i;
+    const row = document.createElement('div'); row.className = 'row'+(editing?' open':''); row.id = 'row'+i;
+    // Ở chế độ tùy chỉnh: tên sửa được tại chỗ, chi tiết luôn mở; bình thường thì bấm để mở accordion
+    const name = editing
+      ? '<span class="rname"><button class="delsk" type="button" data-del="'+i+'" title="Xóa kỹ năng này">✕</button><span data-field="n" data-i="'+i+'"'+ce+'>'+esc(s.n)+'</span></span>'
+      : '<button class="rname" type="button" aria-expanded="false" data-toggle="'+i+'"><span class="chev">▶</span>'+esc(s.n)+'</button>';
     row.innerHTML =
-      '<div class="rowtop">'
-      + '<button class="rname" type="button" aria-expanded="false" data-toggle="'+i+'"><span class="chev">▶</span>'+s.n+'</button>'
-      + '<input type="range" min="1" max="5" step="0.5" value="'+(mode==='cur'?s.cur:s.tg)+'" data-i="'+i+'" aria-label="Mức '+(mode==='cur'?'hiện tại':'mục tiêu')+' của '+s.n+'">'
+      '<div class="rowtop">' + name
+      + '<input type="range" min="1" max="5" step="0.5" value="'+(mode==='cur'?s.cur:s.tg)+'" data-i="'+i+'" aria-label="Mức '+(mode==='cur'?'hiện tại':'mục tiêu')+' của '+esc(s.n)+'">'
       + '<span class="val mono"><span class="cur" id="c'+i+'">'+fmt(s.cur)+'</span> → <span class="tg" id="t'+i+'">'+fmt(s.tg)+'</span></span>'
       + '</div>'
-      + '<div class="detail"><p><span class="tag bok">Chuẩn BABOK v3</span>'+s.bok+'</p><p><span class="tag tna">Căn cứ TNA</span>'+s.tna+'</p><p><span class="tag syl">Syllabus</span>'+s.mod+'</p></div>';
+      + '<div class="detail">'
+      + '<p><span class="tag bok">Chuẩn BABOK v3</span><span data-field="bok" data-i="'+i+'"'+ce+'>'+esc(s.bok)+'</span></p>'
+      + '<p><span class="tag tna">Căn cứ TNA</span><span data-field="tna" data-i="'+i+'"'+ce+'>'+esc(s.tna)+'</span></p>'
+      + '<p><span class="tag syl">Syllabus</span><span data-field="mod" data-i="'+i+'"'+ce+'>'+esc(s.mod)+'</span></p></div>';
     rows.appendChild(row);
   });
 }
-render();
 
 rows.addEventListener('input', e=>{
   if(e.target.type!=='range') return;
@@ -209,12 +268,38 @@ rows.addEventListener('input', e=>{
   persist();
 });
 rows.addEventListener('click', e=>{
+  const del = e.target.closest('[data-del]');
+  if(del){
+    const i = +del.dataset.del;
+    if(confirm('Xóa "'+skills[i].n+'" khỏi radar?')){ skills.splice(i,1); syncChart(); render(); persist(); }
+    return;
+  }
   const btn = e.target.closest('[data-toggle]');
   if(!btn) return;
   const row = document.getElementById('row'+btn.dataset.toggle);
   row.classList.toggle('open');
   btn.setAttribute('aria-expanded', row.classList.contains('open'));
 });
+// Lưu nội dung kỹ năng khi rời khỏi ô đang sửa
+rows.addEventListener('focusout', e=>{
+  const el = e.target.closest('[data-field]'); if(!el) return;
+  const i = +el.dataset.i, f = el.dataset.field;
+  if(!skills[i]) return;
+  skills[i][f] = el.textContent.trim();
+  if(f==='n'){ chart.data.labels[i] = skills[i].n; chart.update('none'); }
+  persist();
+});
+// Lưu các đoạn text của trang (tiêu đề, thang điểm, dải BABOK, ghi chú)
+document.addEventListener('focusout', e=>{
+  const el = e.target.closest('[data-edit]'); if(!el) return;
+  state.texts[el.dataset.edit] = el.innerHTML; persist();
+});
+function applyTexts(){
+  for(const k in state.texts){
+    const el = document.querySelector('[data-edit="'+k+'"]');
+    if(el) el.innerHTML = state.texts[k];
+  }
+}
 
 const mCur = document.getElementById('mCur'), mTg = document.getElementById('mTg');
 function setMode(m){
@@ -249,14 +334,111 @@ document.getElementById('copy').addEventListener('click', ()=>{
   const txt = skills.map(s=>s.n+': '+fmt(s.cur)+' → '+fmt(s.tg)).join('\n');
   navigator.clipboard.writeText(txt).then(()=>toast('Đã sao chép bộ số')).catch(()=>toast('Trình duyệt chặn sao chép'));
 });
-document.getElementById('reset').addEventListener('click', ()=>{
-  skills = JSON.parse(JSON.stringify(DEFAULTS));
-  chart.data.datasets[0].data = skills.map(s=>s.cur);
-  chart.data.datasets[1].data = skills.map(s=>s.tg);
-  chart.update();
-  render(); setMode(mode); persist();
-  toast('Đã đặt lại số mặc định');
+
+// ----- Chế độ tùy chỉnh -----
+const editBtn = document.getElementById('edit'), panel = document.getElementById('panel');
+function setEditing(on){
+  editing = on;
+  document.body.classList.toggle('editing', on);
+  editBtn.textContent = on ? 'Xong' : 'Tùy chỉnh';
+  panel.style.display = on ? 'block' : 'none';
+  document.querySelectorAll('[data-edit]').forEach(el=>{
+    if(on) el.setAttribute('contenteditable','true'); else el.removeAttribute('contenteditable');
+  });
+  render(); setMode(mode);
+}
+editBtn.addEventListener('click', ()=>setEditing(!editing));
+document.getElementById('addSk').addEventListener('click', ()=>{
+  skills.push({n:'Kỹ năng mới', cur:2, tg:4, bok:'', tna:'', mod:''});
+  syncChart(); render(); persist();
+  const el = rows.querySelector('.row:last-child [data-field="n"]'); if(el) el.focus();
 });
+
+// ----- Giao diện: màu 2 đường + ẩn/hiện các khối -----
+const cAccent = document.getElementById('cAccent'), cCur = document.getElementById('cCur');
+const vScale = document.getElementById('vScale'), vBok = document.getElementById('vBok'), vNote = document.getElementById('vNote');
+function applyTheme(){
+  const t = state.theme, r = document.documentElement.style;
+  r.setProperty('--teal', t.accent);
+  r.setProperty('--teal-deep', 'color-mix(in srgb, '+t.accent+' 80%, black)');
+  r.setProperty('--teal-soft', 'color-mix(in srgb, '+t.accent+' 12%, white)');
+  r.setProperty('--gray', t.current);
+  chart.data.datasets[1].borderColor = t.accent;  chart.data.datasets[1].backgroundColor = hexA(t.accent, 0.14);
+  chart.data.datasets[0].borderColor = t.current; chart.data.datasets[0].backgroundColor = hexA(t.current, 0.12);
+  chart.update('none');
+  document.querySelector('.scale').style.display = t.showScale ? '' : 'none';
+  document.querySelector('.bok').style.display   = t.showBok   ? '' : 'none';
+  document.querySelector('.note').style.display  = t.showNote  ? '' : 'none';
+  cAccent.value = t.accent; cCur.value = t.current;
+  vScale.checked = t.showScale; vBok.checked = t.showBok; vNote.checked = t.showNote;
+}
+cAccent.addEventListener('input', e=>{ state.theme.accent  = e.target.value; applyTheme(); persist(); });
+cCur.addEventListener('input',   e=>{ state.theme.current = e.target.value; applyTheme(); persist(); });
+vScale.addEventListener('change', e=>{ state.theme.showScale = e.target.checked; applyTheme(); persist(); });
+vBok.addEventListener('change',   e=>{ state.theme.showBok   = e.target.checked; applyTheme(); persist(); });
+vNote.addEventListener('change',  e=>{ state.theme.showNote  = e.target.checked; applyTheme(); persist(); });
+
+// ----- Hồ sơ team: các bộ điểm đặt tên, lưu kèm cấu hình -----
+const profSel = document.getElementById('profSel');
+function refreshProfiles(){
+  const cur = profSel.value;
+  profSel.innerHTML = '<option value="">— Hồ sơ team —</option>'
+    + Object.keys(state.profiles).map(n=>'<option'+(n===cur?' selected':'')+'>'+esc(n)+'</option>').join('');
+}
+document.getElementById('profSave').addEventListener('click', ()=>{
+  const name = prompt('Tên hồ sơ (ví dụ: Team A):'); if(!name) return;
+  state.profiles[name.trim()] = skills.map(s=>({cur:s.cur, tg:s.tg}));
+  persist(); refreshProfiles(); profSel.value = name.trim();
+  toast('Đã lưu hồ sơ "'+name.trim()+'"');
+});
+profSel.addEventListener('change', ()=>{
+  const p = state.profiles[profSel.value]; if(!p) return;
+  if(p.length !== skills.length){ toast('Hồ sơ có số kỹ năng khác — không áp dụng'); return; }
+  p.forEach((v,i)=>{ skills[i].cur = v.cur; skills[i].tg = v.tg; });
+  syncChart(false); render(); setMode(mode); persist();
+  toast('Đã tải hồ sơ "'+profSel.value+'"');
+});
+document.getElementById('profDel').addEventListener('click', ()=>{
+  const n = profSel.value; if(!n) return;
+  if(!confirm('Xóa hồ sơ "'+n+'"?')) return;
+  delete state.profiles[n]; persist(); refreshProfiles();
+  toast('Đã xóa hồ sơ');
+});
+
+// ----- Xuất / nhập toàn bộ cấu hình dạng JSON -----
+document.getElementById('exp').addEventListener('click', ()=>{
+  const a = document.createElement('a');
+  a.download = 'ba-skill-radar-config.json';
+  a.href = 'data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(state, null, 2));
+  a.click(); toast('Đã xuất cấu hình');
+});
+const impFile = document.getElementById('impFile');
+document.getElementById('imp').addEventListener('click', ()=>impFile.click());
+impFile.addEventListener('change', ()=>{
+  const f = impFile.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ()=>{
+    try{
+      const s = JSON.parse(r.result);
+      if(!s || !Array.isArray(s.skills) || !s.skills.length || !s.skills.every(k=>k && typeof k.n==='string')) throw new Error('bad config');
+      state = {skills: s.skills, theme: {...clone(THEME_DEF), ...(s.theme||{})}, texts: s.texts||{}, profiles: s.profiles||{}};
+      skills = state.skills;
+      applyTexts(); applyTheme(); syncChart(); render(); setMode(mode); refreshProfiles(); persist();
+      toast('Đã nhập cấu hình');
+    }catch(err){ toast('File cấu hình không hợp lệ'); }
+    impFile.value = '';
+  };
+  r.readAsText(f);
+});
+
+document.getElementById('reset').addEventListener('click', ()=>{
+  if(!confirm('Khôi phục nội dung, điểm số và giao diện mặc định? Hồ sơ team đã lưu vẫn được giữ.')) return;
+  state = {skills: clone(DEFAULTS), theme: clone(THEME_DEF), texts: {}, profiles: state.profiles};
+  persist(); location.reload(); // reload để khôi phục text mặc định của trang
+});
+
+// ----- Khởi tạo -----
+applyTexts(); applyTheme(); render(); refreshProfiles();
 </script>
 </body>
 </html>
