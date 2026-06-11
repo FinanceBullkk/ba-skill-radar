@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BA Skill Map — Calibration Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --ink:#1B2A3A; --muted:#5C6B7A; --bg:#F3F5F6; --card:#FFFFFF;
+  --teal:#0E7A6A; --teal-soft:#E2F1EE; --teal-deep:#0A5448;
+  --amber:#A85B12; --amber-soft:#FAF0E0;
+  --gray:#7A8694; --line:#E2E7EB; --radius:14px;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{font-family:'Be Vietnam Pro',system-ui,sans-serif; background:var(--bg); color:var(--ink); line-height:1.6; padding:32px 20px 60px;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+.wrap{max-width:1100px; margin:0 auto;}
+.eyebrow{font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:var(--teal); font-weight:600; margin-bottom:8px;}
+h1{font-size:clamp(22px,3.4vw,30px); font-weight:600; letter-spacing:-0.01em;}
+.sub{color:var(--muted); font-size:14.5px; max-width:62ch; margin-top:6px;}
+.scale{display:grid; grid-template-columns:repeat(5,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin:22px 0 16px;}
+.scale div{background:var(--card); padding:10px 12px; font-size:12.5px; color:var(--muted);}
+.scale b{display:block; font-family:'IBM Plex Mono',monospace; font-size:15px; color:var(--ink); font-weight:500; margin-bottom:2px;}
+.bok{margin:0 0 26px;}
+.boktitle{font-size:12px; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted); font-weight:600; margin-bottom:8px;}
+.bokrow{display:flex; flex-wrap:wrap; gap:7px;}
+.boka{font-size:12.5px; padding:5px 13px; border-radius:99px;}
+.boka.full{background:var(--teal-soft); color:var(--teal-deep);}
+.boka.part{background:var(--amber-soft); color:var(--amber);}
+.boka.out{background:#ECEEF0; color:var(--gray);}
+.grid{display:grid; grid-template-columns:minmax(0,5fr) minmax(0,6fr); gap:20px; align-items:start;}
+.card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:20px;}
+.chartbox{position:relative; width:100%; height:380px;}
+.legend{display:flex; gap:18px; font-size:12.5px; color:var(--muted); margin-bottom:6px; flex-wrap:wrap;}
+.legend span{display:flex; align-items:center; gap:6px;}
+.key{width:20px; height:0;}
+.key.cur{border-top:2px dashed var(--gray);}
+.key.tg{border-top:2px solid var(--teal);}
+.actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:16px;}
+button{font-family:inherit; font-size:13px; padding:8px 14px; border-radius:9px; border:1px solid var(--line); background:var(--card); color:var(--ink); cursor:pointer; transition:background .15s;}
+button:hover{background:var(--bg);}
+button.primary{background:var(--teal); border-color:var(--teal); color:#fff;}
+button.primary:hover{background:var(--teal-deep);}
+button:focus-visible{outline:2px solid var(--teal); outline-offset:2px;}
+.mode{display:flex; gap:6px; background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:4px; width:max-content; margin-bottom:14px;}
+.mode button{border:none; background:transparent; padding:5px 14px; border-radius:7px; color:var(--muted);}
+.mode button.on{background:var(--card); color:var(--ink); border:1px solid var(--line); font-weight:500;}
+.row{border-top:1px solid var(--line); padding:11px 2px;}
+.row:first-of-type{border-top:none;}
+.rowtop{display:flex; align-items:center; gap:12px;}
+.rname{flex:0 0 168px; font-size:13.5px; cursor:pointer; display:flex; align-items:center; gap:6px; background:none; border:none; padding:0; text-align:left; color:var(--ink);}
+.rname:hover{color:var(--teal);}
+.chev{transition:transform .2s; font-size:11px; color:var(--gray);}
+.row.open .chev{transform:rotate(90deg);}
+input[type=range]{flex:1; accent-color:var(--teal); height:22px;}
+.val{flex:0 0 84px; text-align:right; font-size:13.5px; font-weight:500;}
+.val .tg{color:var(--teal);}
+.val .cur{color:var(--ink);}
+.detail{display:none; margin-top:10px; font-size:13px; color:var(--muted); background:var(--bg); border-radius:10px; padding:12px 14px;}
+.row.open .detail{display:block;}
+.tag{display:inline-block; font-size:11.5px; font-weight:500; padding:1px 9px; border-radius:99px; margin-right:6px;}
+.tag.tna{background:var(--amber-soft); color:var(--amber);}
+.tag.syl{background:var(--teal-soft); color:var(--teal-deep);}
+.tag.bok{background:#EDEDFB; color:#3C3489;}
+.detail p+p{margin-top:8px;}
+.note{margin-top:22px; font-size:13px; color:var(--muted); border-left:3px solid var(--teal); padding-left:14px; max-width:78ch;}
+.toast{position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--ink); color:#fff; font-size:13px; padding:9px 18px; border-radius:99px; opacity:0; pointer-events:none; transition:opacity .25s;}
+.toast.show{opacity:1;}
+@media (max-width:860px){ .grid{grid-template-columns:1fr;} .scale{grid-template-columns:repeat(2,1fr);} .rname{flex-basis:140px;} }
+@media (prefers-reduced-motion:reduce){ *{transition:none!important;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">CyberLogitec · L&amp;D · BA capability development program</p>
+  <h1>BA skill map — calibrate it together</h1>
+  <p class="sub">The "current" levels are a hypothesis read from the TNA. Drag the sliders to match each team lead's own assessment during the discussion — the chart updates live. Click a skill name to see the TNA evidence and the course module behind it.</p>
+
+  <div class="scale" aria-label="Definition of the 1-to-5 proficiency scale">
+    <div><b>1</b>Not familiar with the concept</div>
+    <div><b>2</b>Aware, but practice is inconsistent — everyone does it their own way</div>
+    <div><b>3</b>Can do it with guidance</div>
+    <div><b>4</b>Works independently to a standard / template</div>
+    <div><b>5</b>Can coach others</div>
+  </div>
+
+  <div class="bok" aria-label="Coverage of the six BABOK v3 knowledge areas">
+    <p class="boktitle">Reference framework: BABOK Guide v3 (IIBA) — the six knowledge areas of a complete BA</p>
+    <div class="bokrow">
+      <span class="boka full">Elicitation &amp; collaboration · M1, M6</span>
+      <span class="boka full">Requirements analysis &amp; design definition · M2, M3</span>
+      <span class="boka full">Requirements life cycle management · M5</span>
+      <span class="boka part">Solution evaluation · M4 (UAT portion)</span>
+      <span class="boka out">Strategy analysis · phase 2 roadmap</span>
+      <span class="boka out">BA planning &amp; monitoring · phase 2 roadmap</span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="legend">
+        <span><span class="key cur"></span>Current</span>
+        <span><span class="key tg"></span>Target after the course (24h)</span>
+      </div>
+      <div class="chartbox">
+        <canvas id="radar" role="img" aria-label="Radar chart of seven BA skills comparing current and target levels"></canvas>
+      </div>
+      <div class="actions">
+        <button class="primary" id="png">Download PNG</button>
+        <button id="copy">Copy scores</button>
+        <button id="reset">Reset to defaults</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="mode" role="tablist" aria-label="Choose which line to adjust">
+        <button class="on" id="mCur" type="button">Adjust current</button>
+        <button id="mTg" type="button">Adjust target</button>
+      </div>
+      <div id="rows"></div>
+    </div>
+  </div>
+
+  <p class="note"><strong>Methodology note:</strong> the seven skill axes are drawn from the international standard BABOK Guide v3 (IIBA) — covering 4 of 6 knowledge areas and 3 of 6 underlying competencies, the ones relevant to BAs working in a product support environment. The remaining two areas (Strategy Analysis, BA Planning &amp; Monitoring) belong to the senior-BA level and sit on the phase 2 roadmap. Starting scores are inferred from the language of the TNA (e.g. "no consistent methodology or template" → 1.5; "has gained practical experience" → 3) and should be calibrated against team leads' assessments or a self-assessment survey. The default target is level 4 — works independently to a template — because every course module ends with a standard template plus hands-on practice using the team's real tickets. Any scores you adjust are saved automatically in this browser.</p>
+</div>
+<div class="toast" id="toast">Copied</div>
+
+<script>
+const DEFAULTS = [
+ {n:'Requirement elicitation', cur:2.5, tg:4,
+  bok:'BABOK v3 — Knowledge area: Elicitation & Collaboration (prepare / conduct / confirm elicitation results).',
+  tna:'TNA #1, #3: requirements are not always thoroughly elicited and clarified; questioning skills and confirmation of scope, business impact, priority and acceptance criteria need improvement.',
+  mod:'Module 1 — Requirement Gathering & Clarification (3.75h): 5W1H, SPIN, MoSCoW, writing acceptance criteria in Given-When-Then format, two role-play sessions on real tickets.'},
+ {n:'Requirement documentation', cur:2, tg:4,
+  bok:'BABOK v3 — Knowledge area: Requirements Analysis & Design Definition (specify & model requirements, verify & validate).',
+  tna:'TNA #2: requirement documentation lacks consistency in structure, level of detail and presentation format.',
+  mod:'Module 2 — Requirement Documentation (4h): standard 8-part structure, writing for Dev vs for QA, rewriting 2–3 of the team\u2019s real requirements, templates for Bug / CR / Enhancement.'},
+ {n:'Process analysis / flowchart', cur:2, tg:3.5,
+  bok:'BABOK v3 — Knowledge area: Requirements Analysis & Design Definition (model requirements) + underlying competency Tools & Technology.',
+  tna:'TNA #4: the ability to analyze business processes and represent them through flowcharts or process diagrams needs to be standardized.',
+  mod:'Module 3 — Process Analysis & Flowchart (4.5h): AS-IS / TO-BE, swimlanes and basic BPMN, hands-on draw.io practice on the team\u2019s real processes.'},
+ {n:'UAT & test scenarios', cur:1.5, tg:4,
+  bok:'BABOK v3 — Knowledge area: Solution Evaluation (validating the solution against business expectations).',
+  tna:'TNA #5: there is currently no consistent methodology or template for translating requirements into UAT and test scenarios — the largest gap in the TNA.',
+  mod:'Module 4 — UAT & Test Scenario (4h): standard test case structure, mapping each acceptance criterion to at least one test case, running UAT on a staging environment.'},
+ {n:'CR & meeting management', cur:2, tg:4,
+  bok:'BABOK v3 — Knowledge area: Requirements Life Cycle Management (trace, prioritize, assess changes, approve).',
+  tna:'TNA #7: management of change requests, meeting minutes, action items and issue tracking is not yet structured and systematic.',
+  mod:'Module 5 — CR & Meeting Management (4h): CR lifecycle, impact analysis, CR log, standard meeting-minutes structure, triage exercise with three simultaneous CRs.'},
+ {n:'Customer communication', cur:3, tg:4,
+  bok:'BABOK v3 — Underlying competency Communication Skills + knowledge area Elicitation & Collaboration (manage stakeholder collaboration).',
+  tna:'The TNA notes the team has already gained practical experience communicating with customers and end users — the strongest starting point; item #6 calls for further development of clarification, follow-up and open-point management.',
+  mod:'Embedded in Module 1 (role-play with a difficult customer), Module 5 (writing professional follow-up emails) and Module 6.'},
+ {n:'Dev/QA collaboration', cur:2.5, tg:4,
+  bok:'BABOK v3 — Underlying competency Interaction Skills + knowledge area Elicitation & Collaboration.',
+  tna:'TNA #8: stronger collaboration with Developers and QA is required so requirements are correctly understood, properly implemented and thoroughly tested.',
+  mod:'Module 6 — Dev/QA Collaboration (3.75h): the Dev and QA mindset, handling "can\u2019t be done / requirement unclear" situations, handover checklist, full-cycle role-play to close the course.'}
+];
+const KEY = 'ba-skill-radar-en-v1';
+let skills = JSON.parse(JSON.stringify(DEFAULTS));
+try{
+  const saved = localStorage.getItem(KEY);
+  if(saved){ const s = JSON.parse(saved);
+    if(Array.isArray(s) && s.length === skills.length){ s.forEach((v,i)=>{ skills[i].cur = v.cur; skills[i].tg = v.tg; }); } }
+}catch(e){}
+function persist(){ try{ localStorage.setItem(KEY, JSON.stringify(skills.map(s=>({cur:s.cur, tg:s.tg})))); }catch(e){} }
+
+let mode = 'cur';
+const chart = new Chart(document.getElementById('radar'), {
+  type:'radar',
+  data:{ labels: skills.map(s=>s.n), datasets:[
+    {label:'Current', data:skills.map(s=>s.cur), borderColor:'#7A8694', backgroundColor:'rgba(122,134,148,0.12)', borderDash:[6,4], pointStyle:'rect', pointRadius:3, borderWidth:2},
+    {label:'Target', data:skills.map(s=>s.tg), borderColor:'#0E7A6A', backgroundColor:'rgba(14,122,106,0.14)', pointStyle:'circle', pointRadius:3, borderWidth:2}
+  ]},
+  options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+    scales:{ r:{ min:0, max:5,
+      ticks:{stepSize:1, color:'#7A8694', backdropColor:'transparent', font:{size:11, family:"'IBM Plex Mono', monospace"}},
+      grid:{color:'rgba(27,42,58,0.1)'}, angleLines:{color:'rgba(27,42,58,0.1)'},
+      pointLabels:{color:'#1B2A3A', font:{size:12, family:"'Be Vietnam Pro', sans-serif"}} } } }
+});
+
+const rows = document.getElementById('rows');
+function fmt(v){ return Number(v).toFixed(1); }
+function render(){
+  rows.innerHTML = '';
+  skills.forEach((s,i)=>{
+    const row = document.createElement('div'); row.className = 'row'; row.id = 'row'+i;
+    row.innerHTML =
+      '<div class="rowtop">'
+      + '<button class="rname" type="button" aria-expanded="false" data-toggle="'+i+'"><span class="chev">▶</span>'+s.n+'</button>'
+      + '<input type="range" min="1" max="5" step="0.5" value="'+(mode==='cur'?s.cur:s.tg)+'" data-i="'+i+'" aria-label="'+(mode==='cur'?'Current':'Target')+' level for '+s.n+'">'
+      + '<span class="val mono"><span class="cur" id="c'+i+'">'+fmt(s.cur)+'</span> → <span class="tg" id="t'+i+'">'+fmt(s.tg)+'</span></span>'
+      + '</div>'
+      + '<div class="detail"><p><span class="tag bok">BABOK v3 anchor</span>'+s.bok+'</p><p><span class="tag tna">TNA evidence</span>'+s.tna+'</p><p><span class="tag syl">Syllabus</span>'+s.mod+'</p></div>';
+    rows.appendChild(row);
+  });
+}
+render();
+
+rows.addEventListener('input', e=>{
+  if(e.target.type!=='range') return;
+  const i = +e.target.dataset.i, v = parseFloat(e.target.value);
+  skills[i][mode] = v;
+  document.getElementById((mode==='cur'?'c':'t')+i).textContent = fmt(v);
+  chart.data.datasets[mode==='cur'?0:1].data[i] = v;
+  chart.update('none');
+  persist();
+});
+rows.addEventListener('click', e=>{
+  const btn = e.target.closest('[data-toggle]');
+  if(!btn) return;
+  const row = document.getElementById('row'+btn.dataset.toggle);
+  row.classList.toggle('open');
+  btn.setAttribute('aria-expanded', row.classList.contains('open'));
+});
+
+const mCur = document.getElementById('mCur'), mTg = document.getElementById('mTg');
+function setMode(m){
+  mode = m;
+  mCur.classList.toggle('on', m==='cur');
+  mTg.classList.toggle('on', m==='tg');
+  document.querySelectorAll('#rows input[type=range]').forEach(sl=>{
+    const i = +sl.dataset.i;
+    sl.value = skills[i][m];
+    sl.setAttribute('aria-label', (m==='cur'?'Current':'Target')+' level for '+skills[i].n);
+  });
+}
+mCur.addEventListener('click', ()=>setMode('cur'));
+mTg.addEventListener('click', ()=>setMode('tg'));
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1800);
+}
+document.getElementById('png').addEventListener('click', ()=>{
+  const a = document.createElement('a');
+  a.download = 'ba-skill-radar.png';
+  const c = document.getElementById('radar');
+  const tmp = document.createElement('canvas'); tmp.width = c.width; tmp.height = c.height;
+  const ctx = tmp.getContext('2d'); ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0,0,tmp.width,tmp.height); ctx.drawImage(c,0,0);
+  a.href = tmp.toDataURL('image/png');
+  a.click();
+  toast('PNG downloaded');
+});
+document.getElementById('copy').addEventListener('click', ()=>{
+  const txt = skills.map(s=>s.n+': '+fmt(s.cur)+' → '+fmt(s.tg)).join('\n');
+  navigator.clipboard.writeText(txt).then(()=>toast('Scores copied')).catch(()=>toast('Clipboard blocked by browser'));
+});
+document.getElementById('reset').addEventListener('click', ()=>{
+  skills = JSON.parse(JSON.stringify(DEFAULTS));
+  chart.data.datasets[0].data = skills.map(s=>s.cur);
+  chart.data.datasets[1].data = skills.map(s=>s.tg);
+  chart.update();
+  render(); setMode(mode); persist();
+  toast('Reset to default scores');
+});
+</script>
+</body>
+</html>
