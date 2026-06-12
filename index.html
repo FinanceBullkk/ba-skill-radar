@@ -3,609 +3,454 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BA Skill Map — Calibration Tool</title>
+<title>BA Skill Radar — Canvas</title>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 :root{
-  --ink:#1B2A3A; --muted:#5C6B7A; --bg:#F3F5F6; --card:#FFFFFF;
-  --teal:#0E7A6A; --teal-soft:#E2F1EE; --teal-deep:#0A5448;
-  --amber:#A85B12; --amber-soft:#FAF0E0;
-  --gray:#7A8694; --line:#E2E7EB; --radius:14px;
+  --ink:#1B2A3A; --muted:#5C6B7A; --bg:#EEF1F3; --card:#FFFFFF;
+  --accent:#0E7A6A; --accent-deep:#0A5448; --line:#E2E7EB; --sel:#0E7A6A;
 }
 *{box-sizing:border-box; margin:0; padding:0;}
-body{font-family:'Be Vietnam Pro',system-ui,sans-serif; background:var(--bg); color:var(--ink); line-height:1.6; padding:32px 20px 60px;}
+body{font-family:'Be Vietnam Pro',system-ui,sans-serif; background:var(--bg); color:var(--ink); height:100vh; display:flex; flex-direction:column; overflow:hidden;}
 .mono{font-family:'IBM Plex Mono',monospace;}
-.wrap{max-width:1100px; margin:0 auto;}
-.eyebrow{font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:var(--teal); font-weight:600; margin-bottom:8px;}
-h1{font-size:clamp(22px,3.4vw,30px); font-weight:600; letter-spacing:-0.01em;}
-.sub{color:var(--muted); font-size:14.5px; max-width:62ch; margin-top:6px;}
-.scale{display:grid; grid-template-columns:repeat(5,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin:22px 0 16px;}
-.scale div{background:var(--card); padding:10px 12px; font-size:12.5px; color:var(--muted);}
-.scale b{display:block; font-family:'IBM Plex Mono',monospace; font-size:15px; color:var(--ink); font-weight:500; margin-bottom:2px;}
-.grid{display:grid; grid-template-columns:minmax(0,5fr) minmax(0,6fr); gap:20px; align-items:start;}
-.card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:20px;}
-.chartbox{position:relative; width:100%; height:380px;}
-.legend{display:flex; gap:18px; font-size:12.5px; color:var(--muted); margin-bottom:6px; flex-wrap:wrap;}
-.legend span{display:flex; align-items:center; gap:6px;}
-.key{width:20px; height:0;}
-.key.cur{border-top:2px dashed var(--gray);}
-.key.tg{border-top:2px solid var(--teal);}
-.actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:16px;}
-button{font-family:inherit; font-size:13px; padding:8px 14px; border-radius:9px; border:1px solid var(--line); background:var(--card); color:var(--ink); cursor:pointer; transition:background .15s;}
-button:hover{background:var(--bg);}
-button.primary{background:var(--teal); border-color:var(--teal); color:#fff;}
-button.primary:hover{background:var(--teal-deep);}
-button:focus-visible{outline:2px solid var(--teal); outline-offset:2px;}
-.mode{display:flex; gap:6px; background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:4px; width:max-content; margin-bottom:14px;}
-.mode button{border:none; background:transparent; padding:5px 14px; border-radius:7px; color:var(--muted);}
-.mode button.on{background:var(--card); color:var(--ink); border:1px solid var(--line); font-weight:500;}
-.row{border-top:1px solid var(--line); padding:11px 2px;}
-.row:first-of-type{border-top:none;}
-.rowtop{display:flex; align-items:center; gap:12px;}
-.rname{flex:0 0 168px; font-size:13.5px; cursor:pointer; display:flex; align-items:center; gap:6px; background:none; border:none; padding:0; text-align:left; color:var(--ink);}
-.rname:hover{color:var(--teal);}
-.chev{transition:transform .2s; font-size:11px; color:var(--gray);}
-.row.open .chev{transform:rotate(90deg);}
-input[type=range]{flex:1; accent-color:var(--teal); height:22px;}
-.val{flex:0 0 84px; text-align:right; font-size:13.5px; font-weight:500;}
-.val .tg{color:var(--teal);}
-.val .cur{color:var(--ink);}
-.detail{display:none; margin-top:10px; font-size:13px; color:var(--muted); background:var(--bg); border-radius:10px; padding:12px 14px;}
-.row.open .detail{display:block;}
-.detail .desc{display:block; white-space:pre-wrap; overflow-wrap:anywhere;}
-.note{margin-top:22px; font-size:13px; color:var(--muted); border-left:3px solid var(--teal); padding-left:14px; max-width:78ch;}
-.toast{position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--ink); color:#fff; font-size:13px; padding:9px 18px; border-radius:99px; opacity:0; pointer-events:none; transition:opacity .25s;}
+
+/* ---- Toolbar: one clean row ---- */
+#toolbar{display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding:9px 14px; background:var(--card); border-bottom:1px solid var(--line); box-shadow:0 1px 4px rgba(27,42,58,.04); z-index:50;}
+#toolbar .brand{font-weight:600; font-size:14px; letter-spacing:-0.01em; margin-right:6px;}
+#toolbar .sep{width:1px; height:22px; background:var(--line); margin:0 4px;}
+#toolbar .spacer{flex:1;}
+button{font-family:inherit; font-size:12.5px; padding:6px 11px; border-radius:8px; border:1px solid var(--line); background:var(--card); color:var(--ink); cursor:pointer; transition:background .12s,border-color .12s; white-space:nowrap;}
+button:hover{background:var(--bg); border-color:#CFD6DC;}
+button.primary{background:var(--accent); border-color:var(--accent); color:#fff;}
+button.primary:hover{background:var(--accent-deep); border-color:var(--accent-deep);}
+button:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+input[type=color]{width:30px; height:28px; border:1px solid var(--line); border-radius:7px; background:var(--card); padding:1px; cursor:pointer;}
+.hint{font-size:12px; color:var(--muted);}
+
+/* ---- Board ---- */
+#boardwrap{flex:1; overflow:auto; display:flex; justify-content:center; align-items:flex-start; padding:24px;}
+#board{position:relative; background:var(--card); border:1px solid var(--line); border-radius:10px; box-shadow:0 6px 24px rgba(27,42,58,.10); flex:none;}
+
+/* ---- Objects ---- */
+.obj{position:absolute; box-sizing:border-box;}
+.obj.sel{outline:1.5px solid var(--sel); outline-offset:1px;}
+.obj-text{width:100%; min-height:1em; outline:none; line-height:1.35; cursor:grab; word-break:break-word;}
+.obj-text.editing{cursor:text;}
+.obj-rect{width:100%; height:100%; cursor:grab;}
+.obj-img{display:block; width:100%; height:auto; cursor:grab; pointer-events:none;}
+.obj.image{cursor:grab;}
+.obj-line{position:absolute; inset:0; overflow:visible; pointer-events:none;}
+.obj-line .hit{pointer-events:stroke; cursor:grab; stroke:transparent; stroke-width:14;}
+
+/* widget cards (radar + table) */
+.widget{background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 1px 3px rgba(27,42,58,.05);}
+.obj.widget{height:auto;}
+.w-head{display:flex; align-items:center; gap:6px; padding:6px 9px; background:#F7F9FA; border-bottom:1px solid var(--line); font-size:11.5px; font-weight:600; color:var(--muted); letter-spacing:.04em; text-transform:uppercase; cursor:grab; user-select:none;}
+.w-grip{color:#AEB8C0;}
+.w-body{padding:10px;}
+
+/* score table */
+.trow{display:grid; grid-template-columns:1fr 52px 52px 20px; gap:6px; align-items:center; padding:3px 0;}
+.trow + .trow{border-top:1px solid #F0F3F5;}
+.thead{font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; font-weight:600; padding-bottom:3px;}
+.tname{font-size:13px; border:none; background:transparent; color:var(--ink); font-family:inherit; padding:2px 0; outline:none; min-width:0;}
+.tname:focus{border-bottom:1px solid var(--accent);}
+.tnum{width:100%; font-family:'IBM Plex Mono',monospace; font-size:12.5px; text-align:center; border:1px solid var(--line); border-radius:6px; padding:3px 2px; color:var(--ink); background:var(--card);}
+.tnum:focus{outline:1.5px solid var(--accent); outline-offset:-1px;}
+.tdel{border:none; background:none; color:#C0473030; color:#B3402A; cursor:pointer; font-size:12px; padding:0;}
+.taddrow{margin-top:7px;}
+.tadd{font-size:12px; padding:4px 9px;}
+
+/* radar */
+.radar-body{flex:1; padding:8px; position:relative; min-height:0;}
+
+/* selection handles */
+.h{position:absolute; width:11px; height:11px; background:#fff; border:1.5px solid var(--sel); border-radius:2px; z-index:5;}
+.h-br{right:-6px; bottom:-6px; cursor:nwse-resize;}
+.h-r{right:-6px; top:50%; transform:translateY(-50%); cursor:ew-resize;}
+.h-end{border-radius:50%; cursor:grab;}
+.obj-del{position:absolute; top:-11px; right:-11px; width:20px; height:20px; border-radius:50%; background:#fff; border:1.5px solid var(--sel); color:var(--ink); font-size:11px; line-height:1; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; z-index:6;}
+.obj-del:hover{background:#FBEFEC; border-color:#B3402A; color:#B3402A;}
+
+/* hide all editing chrome while exporting */
+.capturing .obj.sel{outline:none;}
+.capturing .h, .capturing .obj-del{display:none;}
+
+.toast{position:fixed; bottom:22px; left:50%; transform:translateX(-50%); background:var(--ink); color:#fff; font-size:13px; padding:9px 18px; border-radius:99px; opacity:0; pointer-events:none; transition:opacity .25s; z-index:100;}
 .toast.show{opacity:1;}
-/* Customize mode: dashed outline marks every text that can be edited in place */
-.editing [data-edit], .editing [data-field]{outline:1.5px dashed var(--amber); outline-offset:3px; border-radius:3px; cursor:text; min-width:24px;}
-.editing [data-edit]:focus, .editing [data-field]:focus{outline-style:solid; background:#FFFDF5;}
-.editing .desc:empty::before{content:'Type a description for this skill…'; color:var(--gray);}
-.delsk{display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; padding:0; border-radius:6px; color:#B3402A; border-color:#E8C9C2; font-size:11px; flex:none;}
-.delsk:hover{background:#FBEFEC;}
-.panel{display:none; margin-top:16px; border-top:1px solid var(--line); padding-top:14px;}
-.prow{display:flex; align-items:center; gap:14px; flex-wrap:wrap; font-size:13px; color:var(--muted); margin-bottom:10px;}
-.prow label{display:flex; align-items:center; gap:6px; cursor:pointer;}
-input[type=color]{width:34px; height:24px; border:1px solid var(--line); border-radius:6px; background:var(--card); padding:1px; cursor:pointer;}
-.hint{font-size:12.5px; color:var(--muted);}
-.profiles{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;}
-.profiles select{flex:1; min-width:140px; font-family:inherit; font-size:13px; padding:7px 10px; border-radius:9px; border:1px solid var(--line); background:var(--card); color:var(--ink);}
-/* Drag handles for reordering skills + page blocks — only shown in customize mode */
-.grip, .blockgrip{display:none;}
-.editing .grip{display:inline-flex; align-items:center; cursor:grab; color:var(--gray); font-size:14px; padding:0 2px; user-select:none; touch-action:none;}
-.editing .blockgrip{display:inline-flex; align-items:center; gap:5px; cursor:grab; color:var(--gray); font-size:11px; letter-spacing:.05em; text-transform:uppercase; margin-bottom:7px; user-select:none; touch-action:none;}
-.editing .grip:active, .editing .blockgrip:active{cursor:grabbing;}
-.sect{position:relative;}
-.sect.dragover{outline:2px dashed var(--teal); outline-offset:4px; border-radius:var(--radius);}
-.row.dragover{outline:2px dashed var(--teal); outline-offset:-2px; border-radius:8px;}
-.row.dragging, .sect.dragging{opacity:.45;}
-/* Free-floating annotation boxes — draggable anywhere over the presentation, captured into the page PNG */
-.note-box{position:absolute; z-index:20; width:208px; background:#FFFDF3; border:1px solid #E7D9A8; border-radius:10px; box-shadow:0 3px 12px rgba(27,42,58,.13);}
-.nb-bar{display:flex; align-items:center; justify-content:space-between; padding:4px 6px 4px 9px; cursor:grab; border-bottom:1px solid #EFE6C4; background:#FBF3D6; border-radius:9px 9px 0 0; touch-action:none;}
-.nb-bar:active{cursor:grabbing;}
-.nb-grip{color:#B79A3A; font-size:12px; user-select:none;}
-.nb-del{border:none; background:none; color:#B3402A; font-size:12px; padding:0 3px; cursor:pointer; line-height:1;}
-.nb-body{padding:8px 11px; font-size:13px; color:#5A4B17; outline:none; min-height:22px; line-height:1.5; overflow-wrap:anywhere;}
-.nb-body:focus{background:#FFFEF8;}
-/* During PNG capture: strip all interactive chrome so the exported image is clean */
-.capturing .actions, .capturing .panel, .capturing .profiles, .capturing .mode, .capturing .grip, .capturing .blockgrip, .capturing .nb-bar, .capturing .chev{display:none!important;}
-.capturing .note-box{box-shadow:none;}
-@media (max-width:860px){ .grid{grid-template-columns:1fr;} .scale{grid-template-columns:repeat(2,1fr);} .rname{flex-basis:140px;} }
 @media (prefers-reduced-motion:reduce){ *{transition:none!important;} }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <p class="eyebrow" data-edit="eyebrow">CyberLogitec · L&amp;D · BA capability development program</p>
-  <h1 data-edit="h1">BA skill map — calibrate it together</h1>
-  <p class="sub" data-edit="sub">Drag the sliders to set each skill's current and target level — the radar updates live. Switch between adjusting the current and target line, and open Customize to rename, reorder or add skills, drop free notes anywhere, and restyle. Everything saves in your browser.</p>
 
-  <div class="scale" aria-label="Definition of the 1-to-5 proficiency scale">
-    <div data-edit="s1"><b>1</b>Not familiar with the concept</div>
-    <div data-edit="s2"><b>2</b>Aware, but practice is inconsistent — everyone does it their own way</div>
-    <div data-edit="s3"><b>3</b>Can do it with guidance</div>
-    <div data-edit="s4"><b>4</b>Works independently to a standard / template</div>
-    <div data-edit="s5"><b>5</b>Can coach others</div>
-  </div>
-
-  <div class="grid">
-    <div class="card">
-      <div class="legend">
-        <span><span class="key cur"></span>Current</span>
-        <span><span class="key tg"></span>Target after the course (24h)</span>
-      </div>
-      <div class="chartbox">
-        <canvas id="radar" role="img" aria-label="Radar chart of seven BA skills comparing current and target levels"></canvas>
-      </div>
-      <div class="actions">
-        <button class="primary" id="png">Download PNG</button>
-        <button id="pngAll">Download page</button>
-        <button id="note">+ Add note</button>
-        <button id="blank">Start blank</button>
-        <button id="copy">Copy scores</button>
-        <button id="edit">Customize</button>
-        <button id="exp">Export JSON</button>
-        <button id="imp">Import JSON</button>
-        <button id="reset">Reset to defaults</button>
-        <input type="file" id="impFile" accept=".json,application/json" hidden>
-      </div>
-      <div class="panel" id="panel" aria-label="Customization settings">
-        <div class="prow">
-          <label>Target color <input type="color" id="cAccent" value="#0E7A6A"></label>
-          <label>Current color <input type="color" id="cCur" value="#7A8694"></label>
-        </div>
-        <div class="prow">
-          <label><input type="checkbox" id="vScale" checked> Scale strip</label>
-          <label><input type="checkbox" id="vNote" checked> Methodology note</label>
-        </div>
-        <div class="prow"><button id="addSk">+ Add skill</button><button id="swapCols">Swap chart ↔ controls</button></div>
-        <p class="hint">Drag the <strong>⠿</strong> handles to reorder skills (radar axes follow) or whole page blocks. Click any dashed-outlined text to edit it in place, or “+ Add note” for a free-floating sticky you can drag anywhere. Everything saves automatically in this browser — use Export JSON to share a configuration.</p>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="profiles">
-        <select id="profSel" aria-label="Team profile"><option value="">— Team profile —</option></select>
-        <button id="profSave">Save as…</button>
-        <button id="profDel">Delete</button>
-      </div>
-      <div class="mode" role="tablist" aria-label="Choose which line to adjust">
-        <button class="on" id="mCur" type="button">Adjust current</button>
-        <button id="mTg" type="button">Adjust target</button>
-      </div>
-      <div id="rows"></div>
-    </div>
-  </div>
-
-  <p class="note" data-edit="note"><strong>Methodology note:</strong> the 1–5 scale and the skills above are a starting template — rename, reorder, add or remove skills to fit your team, and edit this note with your own context, scoring rubric or assumptions. You can hide this note anytime from Customize.</p>
+<div id="toolbar">
+  <span class="brand">BA Skill Radar</span>
+  <span class="sep"></span>
+  <button data-add="text">+ Text</button>
+  <button data-add="rect">▭ Box</button>
+  <button data-add="line">╱ Line</button>
+  <button data-add="arrow">↗ Arrow</button>
+  <button data-add="image">🖼 Image</button>
+  <span class="sep"></span>
+  <label class="hint" style="display:flex;align-items:center;gap:5px;">Accent <input type="color" id="accent" value="#0E7A6A"></label>
+  <span class="spacer"></span>
+  <span class="hint" id="tip">Click to select · drag to move · double-click text to edit</span>
+  <span class="sep"></span>
+  <button class="primary" id="png">Download PNG</button>
+  <button id="exp">Export</button>
+  <button id="imp">Import</button>
+  <button id="reset">Reset</button>
+  <input type="file" id="impFile" accept=".json,application/json" hidden>
+  <input type="file" id="imgFile" accept="image/*" hidden>
 </div>
-<div class="toast" id="toast">Copied</div>
+
+<div id="boardwrap"><div id="board"></div></div>
+<div class="toast" id="toast"></div>
 
 <script>
-// Default skills: name + current/target only. Each skill gets an optional free-form
-// description users fill in themselves (no preset framework imposed on the skills).
-const DEFAULTS = [
- {n:'Requirement elicitation', cur:2.5, tg:4, desc:''},
- {n:'Requirement documentation', cur:2, tg:4, desc:''},
- {n:'Process analysis / flowchart', cur:2, tg:3.5, desc:''},
- {n:'UAT & test scenarios', cur:1.5, tg:4, desc:''},
- {n:'CR & meeting management', cur:2, tg:4, desc:''},
- {n:'Customer communication', cur:3, tg:4, desc:''},
- {n:'Dev/QA collaboration', cur:2.5, tg:4, desc:''}
-];
-const THEME_DEF = {accent:'#0E7A6A', current:'#7A8694', showScale:true, showBok:true, showNote:true};
-const LAYOUT_DEF = {blocks:['scale','grid','note'], swapCols:false};
-const BLOCK_KEYS = ['scale','grid','note'];
-const KEY = 'ba-skill-radar-en-v2', OLDKEY = 'ba-skill-radar-en-v1';
+'use strict';
+const $ = s => document.querySelector(s);
 const clone = o => JSON.parse(JSON.stringify(o));
-// Ensure the saved block order always lists exactly the four known blocks
-function sanitizeBlocks(b){
-  const out = (Array.isArray(b)?b:[]).filter(k=>BLOCK_KEYS.includes(k));
-  BLOCK_KEYS.forEach(k=>{ if(!out.includes(k)) out.push(k); });
-  return out;
-}
-// Build a complete, valid state from any (possibly partial / older) parsed object
-function normalize(s){
-  s = s || {};
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const uid = () => 'o'+Math.random().toString(36).slice(2,8);
+function hexA(hex,a){ const n=parseInt(hex.slice(1),16); return 'rgba('+(n>>16&255)+','+(n>>8&255)+','+(n&255)+','+a+')'; }
+function mix(hex,t,w){ const a=parseInt(hex.slice(1),16),b=parseInt(t.slice(1),16);
+  const c=s=>Math.round(((a>>s)&255)*(1-w)+((b>>s)&255)*w); return '#'+((1<<24)+(c(16)<<16)+(c(8)<<8)+c(0)).toString(16).slice(1); }
+
+// ---- Default content ----
+const DEFAULT_SKILLS = [
+  {n:'Requirement elicitation', cur:2.5, tg:4},
+  {n:'Requirement documentation', cur:2, tg:4},
+  {n:'Process analysis / flowchart', cur:2, tg:3.5},
+  {n:'UAT & test scenarios', cur:1.5, tg:4},
+  {n:'CR & meeting management', cur:2, tg:4},
+  {n:'Customer communication', cur:3, tg:4},
+  {n:'Dev/QA collaboration', cur:2.5, tg:4}
+];
+function defaultState(){
   return {
-    skills: (Array.isArray(s.skills) && s.skills.length)
-      ? s.skills.map(k=>({n:k.n, cur:k.cur, tg:k.tg, desc:k.desc||''})) // drop any legacy bok/tna/mod
-      : clone(DEFAULTS),
-    theme: {...clone(THEME_DEF), ...(s.theme||{})},
-    texts: s.texts || {},
-    profiles: s.profiles || {},
-    notes: Array.isArray(s.notes) ? s.notes : [],
-    layout: {blocks: sanitizeBlocks((s.layout||{}).blocks), swapCols: !!(s.layout||{}).swapCols}
+    skills: clone(DEFAULT_SKILLS),
+    accent: '#0E7A6A',
+    nextZ: 10,
+    objects: [
+      {id:'title', type:'text', x:0.035, y:0.05, w:0.55, size:34, bold:true, color:'#1B2A3A', text:'BA Skill Radar', z:1},
+      {id:'table', type:'table', x:0.035, y:0.20, w:0.40, z:2},
+      {id:'radar', type:'radar', x:0.50, y:0.16, w:0.45, h:0.70, z:3}
+    ]
   };
 }
-// Full app state: skills, theme, page-text overrides, named profiles, free notes, page layout
-let state = normalize(null);
+const SINGLETONS = ['table','radar']; // always present, not deletable
+
+// ---- State + persistence ----
+const KEY = 'ba-canvas-v1';
+let state = defaultState();
 try{
   const saved = localStorage.getItem(KEY);
   if(saved){
-    state = normalize(JSON.parse(saved));
+    const s = JSON.parse(saved);
+    if(s && Array.isArray(s.objects)) state = Object.assign(defaultState(), s);
   }else{
-    const old = localStorage.getItem(OLDKEY); // migrate scores saved by the old v1 schema
+    // seed skills from the previous (pre-canvas) tool if it was used in this browser
+    const old = localStorage.getItem('ba-skill-radar-en-v2') || localStorage.getItem('ba-skill-radar-v2');
     if(old){ const o = JSON.parse(old);
-      if(Array.isArray(o) && o.length === state.skills.length) o.forEach((v,i)=>{ state.skills[i].cur = v.cur; state.skills[i].tg = v.tg; }); }
+      if(o && Array.isArray(o.skills) && o.skills.length)
+        state.skills = o.skills.map(k=>({n:k.n, cur:k.cur, tg:k.tg})); }
   }
 }catch(e){}
-let skills = state.skills;
+ensureSingletons();
+function ensureSingletons(){
+  const def = defaultState();
+  SINGLETONS.forEach(id=>{ if(!state.objects.find(o=>o.id===id)) state.objects.push(def.objects.find(o=>o.id===id)); });
+}
 function persist(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
-const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-function hexA(hex,a){ const n = parseInt(hex.slice(1),16); return 'rgba('+(n>>16&255)+','+(n>>8&255)+','+(n&255)+','+a+')'; }
+function obj(id){ return state.objects.find(o=>o.id===id); }
 
-let mode = 'cur', editing = false;
-const chart = new Chart(document.getElementById('radar'), {
-  type:'radar',
-  data:{ labels: skills.map(s=>s.n), datasets:[
-    {label:'Current', data:skills.map(s=>s.cur), borderColor:'#7A8694', backgroundColor:'rgba(122,134,148,0.12)', borderDash:[6,4], pointStyle:'rect', pointRadius:3, borderWidth:2},
-    {label:'Target', data:skills.map(s=>s.tg), borderColor:'#0E7A6A', backgroundColor:'rgba(14,122,106,0.14)', pointStyle:'circle', pointRadius:3, borderWidth:2}
-  ]},
-  options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
-    scales:{ r:{ min:0, max:5,
-      ticks:{stepSize:1, color:'#7A8694', backdropColor:'transparent', font:{size:11, family:"'IBM Plex Mono', monospace"}},
-      grid:{color:'rgba(27,42,58,0.1)'}, angleLines:{color:'rgba(27,42,58,0.1)'},
-      pointLabels:{color:'#1B2A3A', font:{size:12, family:"'Be Vietnam Pro', sans-serif"}} } } }
-});
+// ---- Board sizing (responsive, fixed 16:9; coords are fractions of board) ----
+const board = $('#board'), boardwrap = $('#boardwrap');
+let BW = 1280, BH = 720;
+function sizeBoard(){
+  const avail = boardwrap.clientWidth - 48;
+  BW = clamp(Math.round(avail), 360, 1500);
+  BH = Math.round(BW * 9/16);
+  board.style.width = BW+'px'; board.style.height = BH+'px';
+  renderBoard();
+}
+const SCALE = () => BW/1600; // font/stroke scale vs 1600-px baseline
 
-const rows = document.getElementById('rows');
-function fmt(v){ return Number(v).toFixed(1); }
-function syncChart(anim){
-  chart.data.labels = skills.map(s=>s.n);
-  chart.data.datasets[0].data = skills.map(s=>s.cur);
-  chart.data.datasets[1].data = skills.map(s=>s.tg);
-  chart.update(anim===false?'none':undefined);
-}
-function render(){
-  rows.innerHTML = '';
-  const ce = editing ? ' contenteditable="true"' : '';
-  skills.forEach((s,i)=>{
-    const hasDesc = editing || (s.desc && s.desc.trim()); // accordion only when there's something to show / edit
-    const row = document.createElement('div'); row.className = 'row'+(editing?' open':''); row.id = 'row'+i;
-    // Customize: name editable + draggable, detail open. View: toggle accordion only if a description exists.
-    const name = editing
-      ? '<span class="rname"><span class="grip" data-grip title="Drag to reorder">⠿</span><button class="delsk" type="button" data-del="'+i+'" title="Remove this skill">✕</button><span data-field="n" data-i="'+i+'"'+ce+'>'+esc(s.n)+'</span></span>'
-      : (hasDesc
-          ? '<button class="rname" type="button" aria-expanded="false" data-toggle="'+i+'"><span class="chev">▶</span>'+esc(s.n)+'</button>'
-          : '<span class="rname">'+esc(s.n)+'</span>');
-    row.innerHTML =
-      '<div class="rowtop">' + name
-      + '<input type="range" min="1" max="5" step="0.5" value="'+(mode==='cur'?s.cur:s.tg)+'" data-i="'+i+'" aria-label="'+(mode==='cur'?'Current':'Target')+' level for '+esc(s.n)+'">'
-      + '<span class="val mono"><span class="cur" id="c'+i+'">'+fmt(s.cur)+'</span> → <span class="tg" id="t'+i+'">'+fmt(s.tg)+'</span></span>'
-      + '</div>'
-      + (hasDesc
-          ? '<div class="detail"><span class="desc" data-field="desc" data-i="'+i+'"'+ce+'>'+esc(s.desc||'')+'</span></div>'
-          : '');
-    rows.appendChild(row);
-  });
-}
-
-rows.addEventListener('input', e=>{
-  if(e.target.type!=='range') return;
-  const i = +e.target.dataset.i, v = parseFloat(e.target.value);
-  skills[i][mode] = v;
-  document.getElementById((mode==='cur'?'c':'t')+i).textContent = fmt(v);
-  chart.data.datasets[mode==='cur'?0:1].data[i] = v;
-  chart.update('none');
-  persist();
-});
-rows.addEventListener('click', e=>{
-  const del = e.target.closest('[data-del]');
-  if(del){
-    const i = +del.dataset.del;
-    if(confirm('Remove "'+skills[i].n+'" from the radar?')){ skills.splice(i,1); syncChart(); render(); persist(); }
-    return;
-  }
-  const btn = e.target.closest('[data-toggle]');
-  if(!btn) return;
-  const row = document.getElementById('row'+btn.dataset.toggle);
-  row.classList.toggle('open');
-  btn.setAttribute('aria-expanded', row.classList.contains('open'));
-});
-// Persist in-place edits of skill fields when focus leaves the edited element
-rows.addEventListener('focusout', e=>{
-  const el = e.target.closest('[data-field]'); if(!el) return;
-  const i = +el.dataset.i, f = el.dataset.field;
-  if(!skills[i]) return;
-  skills[i][f] = el.textContent.trim();
-  if(f==='n'){ chart.data.labels[i] = skills[i].n; chart.update('none'); }
-  persist();
-});
-// Persist in-place edits of page texts (headings, scale strip, methodology note)
-document.addEventListener('focusout', e=>{
-  const el = e.target.closest('[data-edit]'); if(!el) return;
-  state.texts[el.dataset.edit] = el.innerHTML; persist();
-});
-function applyTexts(){
-  for(const k in state.texts){
-    const el = document.querySelector('[data-edit="'+k+'"]');
-    if(el) el.innerHTML = state.texts[k];
-  }
-}
-
-const mCur = document.getElementById('mCur'), mTg = document.getElementById('mTg');
-function setMode(m){
-  mode = m;
-  mCur.classList.toggle('on', m==='cur');
-  mTg.classList.toggle('on', m==='tg');
-  document.querySelectorAll('#rows input[type=range]').forEach(sl=>{
-    const i = +sl.dataset.i;
-    sl.value = skills[i][m];
-    sl.setAttribute('aria-label', (m==='cur'?'Current':'Target')+' level for '+skills[i].n);
-  });
-}
-mCur.addEventListener('click', ()=>setMode('cur'));
-mTg.addEventListener('click', ()=>setMode('tg'));
-
-function toast(msg){
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 1800);
-}
-document.getElementById('png').addEventListener('click', ()=>{
-  const a = document.createElement('a');
-  a.download = 'ba-skill-radar.png';
-  const c = document.getElementById('radar');
-  const tmp = document.createElement('canvas'); tmp.width = c.width; tmp.height = c.height;
-  const ctx = tmp.getContext('2d'); ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0,0,tmp.width,tmp.height); ctx.drawImage(c,0,0);
-  a.href = tmp.toDataURL('image/png');
-  a.click();
-  toast('PNG downloaded');
-});
-document.getElementById('copy').addEventListener('click', ()=>{
-  const txt = skills.map(s=>s.n+': '+fmt(s.cur)+' → '+fmt(s.tg)).join('\n');
-  navigator.clipboard.writeText(txt).then(()=>toast('Scores copied')).catch(()=>toast('Clipboard blocked by browser'));
-});
-
-// ----- Customize mode -----
-const editBtn = document.getElementById('edit'), panel = document.getElementById('panel');
-function setEditing(on){
-  editing = on;
-  document.body.classList.toggle('editing', on);
-  editBtn.textContent = on ? 'Done' : 'Customize';
-  panel.style.display = on ? 'block' : 'none';
-  document.querySelectorAll('[data-edit]').forEach(el=>{
-    if(on) el.setAttribute('contenteditable','true'); else el.removeAttribute('contenteditable');
-  });
-  render(); setMode(mode);
-}
-editBtn.addEventListener('click', ()=>setEditing(!editing));
-document.getElementById('addSk').addEventListener('click', ()=>{
-  skills.push({n:'New skill', cur:2, tg:4, bok:'', tna:'', mod:''});
-  syncChart(); render(); persist();
-  const el = rows.querySelector('.row:last-child [data-field="n"]'); if(el) el.focus();
-});
-
-// ----- Theme: line colors + section visibility -----
-const cAccent = document.getElementById('cAccent'), cCur = document.getElementById('cCur');
-const vScale = document.getElementById('vScale'), vNote = document.getElementById('vNote');
-// Blend two hex colors; w = weight (0..1) of `target`. Used instead of CSS color-mix
-// so html2canvas (which can't parse color-mix) renders the page PNG with correct colors.
-function mix(hex, target, w){
-  const a = parseInt(hex.slice(1),16), b = parseInt(target.slice(1),16);
-  const ch = (sh)=>Math.round(((a>>sh)&255)*(1-w) + ((b>>sh)&255)*w);
-  return '#'+((1<<24)+(ch(16)<<16)+(ch(8)<<8)+ch(0)).toString(16).slice(1);
-}
-function applyTheme(){
-  const t = state.theme, r = document.documentElement.style;
-  r.setProperty('--teal', t.accent);
-  r.setProperty('--teal-deep', mix(t.accent, '#000000', 0.2));
-  r.setProperty('--teal-soft', mix(t.accent, '#ffffff', 0.88));
-  r.setProperty('--gray', t.current);
-  chart.data.datasets[1].borderColor = t.accent;  chart.data.datasets[1].backgroundColor = hexA(t.accent, 0.14);
-  chart.data.datasets[0].borderColor = t.current; chart.data.datasets[0].backgroundColor = hexA(t.current, 0.12);
-  chart.update('none');
-  // Toggle the section wrappers (created by setupLayout) so reorder + hide stay consistent
-  if(SECTS.scale) SECTS.scale.style.display = t.showScale ? '' : 'none';
-  if(SECTS.note)  SECTS.note.style.display  = t.showNote  ? '' : 'none';
-  cAccent.value = t.accent; cCur.value = t.current;
-  vScale.checked = t.showScale; vNote.checked = t.showNote;
-}
-cAccent.addEventListener('input', e=>{ state.theme.accent  = e.target.value; applyTheme(); persist(); });
-cCur.addEventListener('input',   e=>{ state.theme.current = e.target.value; applyTheme(); persist(); });
-vScale.addEventListener('change', e=>{ state.theme.showScale = e.target.checked; applyTheme(); persist(); });
-vNote.addEventListener('change',  e=>{ state.theme.showNote  = e.target.checked; applyTheme(); persist(); });
-
-// ----- Team profiles: named score sets stored alongside the config -----
-const profSel = document.getElementById('profSel');
-function refreshProfiles(){
-  const cur = profSel.value;
-  profSel.innerHTML = '<option value="">— Team profile —</option>'
-    + Object.keys(state.profiles).map(n=>'<option'+(n===cur?' selected':'')+'>'+esc(n)+'</option>').join('');
-}
-document.getElementById('profSave').addEventListener('click', ()=>{
-  const name = prompt('Profile name (e.g. Team A):'); if(!name) return;
-  state.profiles[name.trim()] = skills.map(s=>({cur:s.cur, tg:s.tg}));
-  persist(); refreshProfiles(); profSel.value = name.trim();
-  toast('Profile "'+name.trim()+'" saved');
-});
-profSel.addEventListener('change', ()=>{
-  const p = state.profiles[profSel.value]; if(!p) return;
-  if(p.length !== skills.length){ toast('Profile has a different skill count — not applied'); return; }
-  p.forEach((v,i)=>{ skills[i].cur = v.cur; skills[i].tg = v.tg; });
-  syncChart(false); render(); setMode(mode); persist();
-  toast('Profile "'+profSel.value+'" loaded');
-});
-document.getElementById('profDel').addEventListener('click', ()=>{
-  const n = profSel.value; if(!n) return;
-  if(!confirm('Delete profile "'+n+'"?')) return;
-  delete state.profiles[n]; persist(); refreshProfiles();
-  toast('Profile deleted');
-});
-
-// ----- Export / import the whole configuration as JSON -----
-document.getElementById('exp').addEventListener('click', ()=>{
-  const a = document.createElement('a');
-  a.download = 'ba-skill-radar-config.json';
-  a.href = 'data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(state, null, 2));
-  a.click(); toast('Configuration exported');
-});
-const impFile = document.getElementById('impFile');
-document.getElementById('imp').addEventListener('click', ()=>impFile.click());
-impFile.addEventListener('change', ()=>{
-  const f = impFile.files[0]; if(!f) return;
-  const r = new FileReader();
-  r.onload = ()=>{
-    try{
-      const s = JSON.parse(r.result);
-      if(!s || !Array.isArray(s.skills) || !s.skills.length || !s.skills.every(k=>k && typeof k.n==='string')) throw new Error('bad config');
-      state = normalize(s);
-      skills = state.skills;
-      applyTexts(); applyLayout(); applyTheme(); syncChart(); render(); setMode(mode); renderNotes(); refreshProfiles(); persist();
-      toast('Configuration imported');
-    }catch(err){ toast('Invalid configuration file'); }
-    impFile.value = '';
+// ---- Chart ----
+let chart = null;
+function chartCfg(){
+  const a = state.accent, g = '#8A95A1';
+  return {
+    type:'radar',
+    data:{ labels: state.skills.map(s=>s.n), datasets:[
+      {label:'Current', data:state.skills.map(s=>s.cur), borderColor:g, backgroundColor:hexA(g,0.12), borderDash:[6,4], pointRadius:2.5, borderWidth:2},
+      {label:'Target', data:state.skills.map(s=>s.tg), borderColor:a, backgroundColor:hexA(a,0.14), pointRadius:2.5, borderWidth:2}
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false, animation:false,
+      plugins:{legend:{display:true, labels:{boxWidth:12, font:{size:11}}}},
+      scales:{ r:{ min:0, max:5, ticks:{stepSize:1, display:false}, pointLabels:{font:{size:Math.max(9, Math.round(11*SCALE()))}, color:'#1B2A3A'},
+        grid:{color:'rgba(27,42,58,0.1)'}, angleLines:{color:'rgba(27,42,58,0.1)'} } } }
   };
+}
+function buildChart(){
+  const cv = board.querySelector('#radarCanvas'); if(!cv) return;
+  if(chart){ chart.destroy(); chart = null; }
+  chart = new Chart(cv, chartCfg());
+}
+function syncChart(){
+  if(!chart) return;
+  chart.data.labels = state.skills.map(s=>s.n);
+  chart.data.datasets[0].data = state.skills.map(s=>s.cur);
+  chart.data.datasets[1].data = state.skills.map(s=>s.tg);
+  chart.data.datasets[1].borderColor = state.accent; chart.data.datasets[1].backgroundColor = hexA(state.accent,0.14);
+  chart.update('none');
+}
+
+// ---- Render ----
+let selected = null, editing = null;
+function px(o){ // bounding box in pixels for box-type objects
+  return {l:o.x*BW, t:o.y*BH, w:o.w*BW, h:(o.h!=null?o.h*BH:null)};
+}
+function renderBoard(){
+  board.querySelectorAll('.obj').forEach(n=>n.remove());
+  state.objects.slice().sort((a,b)=>(a.z||0)-(b.z||0)).forEach(o=> board.appendChild(makeEl(o)) );
+  buildChart();
+  decorate();
+}
+function makeEl(o){
+  const el = document.createElement('div');
+  el.className = 'obj '+o.type; el.dataset.id = o.id; el.style.zIndex = o.z||1;
+  if(o.type==='line'){
+    layoutLine(el,o);
+  }else{
+    const b = px(o);
+    el.style.left=b.l+'px'; el.style.top=b.t+'px'; el.style.width=b.w+'px';
+    if(b.h!=null) el.style.height=b.h+'px';
+  }
+  if(o.type==='text'){
+    el.innerHTML = '<div class="obj-text" style="font-size:'+(o.size*SCALE())+'px;font-weight:'+(o.bold?600:400)+';color:'+(o.color||'#1B2A3A')+'">'+esc(o.text||'')+'</div>';
+  }else if(o.type==='rect'){
+    el.innerHTML = '<div class="obj-rect" style="border:2px solid '+(o.color||state.accent)+';background:'+(o.fill||hexA(o.color||state.accent,0.06))+';border-radius:'+(o.round?10:2)+'px"></div>';
+  }else if(o.type==='image'){
+    el.innerHTML = '<img class="obj-img" src="'+o.src+'" alt="">';
+  }else if(o.type==='line'){
+    drawLine(el,o);
+  }else if(o.type==='table'){
+    el.classList.add('widget'); el.innerHTML = tableHTML();
+  }else if(o.type==='radar'){
+    el.classList.add('widget');
+    el.innerHTML = '<div class="w-head"><span class="w-grip">⠿</span>Radar</div><div class="radar-body"><canvas id="radarCanvas"></canvas></div>';
+  }
+  return el;
+}
+
+// ----- line / arrow -----
+function lineBox(o){ const pad=10;
+  return { l:Math.min(o.x1,o.x2)*BW-pad, t:Math.min(o.y1,o.y2)*BH-pad,
+           w:Math.abs(o.x2-o.x1)*BW+2*pad, h:Math.abs(o.y2-o.y1)*BH+2*pad, pad }; }
+function layoutLine(el,o){ const b=lineBox(o);
+  el.style.left=b.l+'px'; el.style.top=b.t+'px'; el.style.width=b.w+'px'; el.style.height=b.h+'px'; }
+function drawLine(el,o){ const b=lineBox(o);
+  const x1=o.x1*BW-b.l, y1=o.y1*BH-b.t, x2=o.x2*BW-b.l, y2=o.y2*BH-b.t;
+  const col=o.color||state.accent, mid='m'+o.id;
+  el.innerHTML =
+    '<svg class="obj-line" width="'+b.w+'" height="'+b.h+'">'
+    + (o.arrow?'<defs><marker id="'+mid+'" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="'+col+'"/></marker></defs>':'')
+    + '<line class="hit" x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'"/>'
+    + '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+col+'" stroke-width="2.5" stroke-linecap="round"'+(o.arrow?' marker-end="url(#'+mid+')"':'')+'/>'
+    + '</svg>'; }
+
+// ----- score table -----
+function tableHTML(){
+  let rows = '<div class="trow thead"><span>Skill</span><span style="text-align:center">Cur</span><span style="text-align:center">Tgt</span><span></span></div>';
+  state.skills.forEach((s,i)=>{
+    rows += '<div class="trow">'
+      + '<input class="tname" data-i="'+i+'" value="'+esc(s.n)+'">'
+      + '<input class="tnum" type="number" min="1" max="5" step="0.5" data-f="cur" data-i="'+i+'" value="'+s.cur+'">'
+      + '<input class="tnum" type="number" min="1" max="5" step="0.5" data-f="tg" data-i="'+i+'" value="'+s.tg+'">'
+      + '<button class="tdel" data-del="'+i+'" title="Remove">✕</button></div>';
+  });
+  return '<div class="w-head"><span class="w-grip">⠿</span>Score table</div>'
+    + '<div class="w-body">'+rows+'<div class="taddrow"><button class="tadd" id="addSkill">+ Skill</button></div></div>';
+}
+
+// ---- Selection + handles ----
+function decorate(){
+  board.querySelectorAll('.obj').forEach(n=>{ n.classList.remove('sel'); n.querySelectorAll('.h,.obj-del').forEach(h=>h.remove()); });
+  if(!selected) return;
+  const o = obj(selected); if(!o) return;
+  const el = board.querySelector('.obj[data-id="'+selected+'"]'); if(!el) return;
+  el.classList.add('sel');
+  if(!SINGLETONS.includes(o.id)){ const d=document.createElement('button'); d.className='obj-del'; d.textContent='✕'; el.appendChild(d); }
+  if(o.type==='line'){
+    const b=lineBox(o);
+    addHandle(el,'h-end', o.x1*BW-b.l-5, o.y1*BH-b.t-5, 'p1');
+    addHandle(el,'h-end', o.x2*BW-b.l-5, o.y2*BH-b.t-5, 'p2');
+  }else if(o.type==='rect' || o.type==='radar'){
+    const h=document.createElement('div'); h.className='h h-br'; h.dataset.dir='br'; el.appendChild(h);
+  }else{ // text / table / image → width-only
+    const h=document.createElement('div'); h.className='h h-r'; h.dataset.dir='r'; el.appendChild(h);
+  }
+}
+function addHandle(el,cls,x,y,dir){ const h=document.createElement('div'); h.className='h '+cls; h.style.left=x+'px'; h.style.top=y+'px'; h.dataset.dir=dir; el.appendChild(h); }
+function select(id){ selected=id; if(id){ const o=obj(id); if(o){ o.z=++state.nextZ; const el=board.querySelector('.obj[data-id="'+id+'"]'); if(el) el.style.zIndex=o.z; } } decorate(); }
+
+// ---- Pointer: move + resize ----
+let drag = null;
+board.addEventListener('pointerdown', e=>{
+  const handle = e.target.closest('.h');
+  const del = e.target.closest('.obj-del');
+  const el = e.target.closest('.obj');
+  if(del){ e.preventDefault(); deleteObj(el.dataset.id); return; }
+  if(!el){ if(editing) commitEdit(); select(null); return; }
+  const id = el.dataset.id, o = obj(id);
+  // interacting with inputs / editing text → don't drag, just select
+  if(e.target.matches('input,button,.tname,.tnum') || (editing===id && e.target.closest('.obj-text'))){ select(id); return; }
+  const headOnly = (o.type==='table'||o.type==='radar');
+  if(handle){ select(id); startResize(e,o,handle.dataset.dir); return; }
+  if(headOnly && !e.target.closest('.w-head')){ select(id); return; } // body of widget = interact, header = move
+  select(id);
+  startMove(e,o);
+});
+function startMove(e,o){
+  e.preventDefault();
+  if(o.type==='line'){ drag={mode:'lmove', o, sx:e.clientX, sy:e.clientY, x1:o.x1,y1:o.y1,x2:o.x2,y2:o.y2}; }
+  else drag={mode:'move', o, sx:e.clientX, sy:e.clientY, ox:o.x, oy:o.y};
+  window.addEventListener('pointermove', onMove); window.addEventListener('pointerup', endDrag);
+}
+function startResize(e,o,dir){
+  e.preventDefault();
+  if(dir==='p1'||dir==='p2'){ drag={mode:'lpt', o, dir}; }
+  else drag={mode:'resize', o, dir, sx:e.clientX, sy:e.clientY, ow:o.w, oh:o.h};
+  window.addEventListener('pointermove', onMove); window.addEventListener('pointerup', endDrag);
+}
+function onMove(e){
+  if(!drag) return;
+  const o = drag.o, el = board.querySelector('.obj[data-id="'+o.id+'"]'); if(!el) return;
+  const dfx=(e.clientX-drag.sx)/BW, dfy=(e.clientY-drag.sy)/BH;
+  if(drag.mode==='move'){
+    o.x = clamp(drag.ox+dfx, 0, 1-(o.w||0.05)); o.y = clamp(drag.oy+dfy, 0, 0.99);
+    el.style.left=o.x*BW+'px'; el.style.top=o.y*BH+'px';
+  }else if(drag.mode==='resize'){
+    o.w = clamp(drag.ow+dfx, 0.06, 1); el.style.width=o.w*BW+'px';
+    if(drag.dir==='br' && o.h!=null){ o.h=clamp(drag.oh+dfy, 0.06, 1); el.style.height=o.h*BH+'px'; if(o.type==='radar'&&chart) chart.resize(); }
+    positionHandles(el,o);
+  }else if(drag.mode==='lmove'){
+    o.x1=drag.x1+dfx; o.y1=drag.y1+dfy; o.x2=drag.x2+dfx; o.y2=drag.y2+dfy;
+    layoutLine(el,o); drawLine(el,o); decorate();
+  }else if(drag.mode==='lpt'){
+    const fx=clamp((e.clientX-board.getBoundingClientRect().left)/BW,0,1), fy=clamp((e.clientY-board.getBoundingClientRect().top)/BH,0,1);
+    if(drag.dir==='p1'){ o.x1=fx; o.y1=fy; } else { o.x2=fx; o.y2=fy; }
+    layoutLine(el,o); drawLine(el,o); decorate();
+  }
+}
+function positionHandles(el,o){ // keep width/corner handle pinned after live resize (text auto-height etc.)
+  // CSS already pins .h-r / .h-br relative to el; nothing needed for box types
+}
+function endDrag(){ if(drag){ drag=null; persist(); } window.removeEventListener('pointermove',onMove); window.removeEventListener('pointerup',endDrag); }
+
+// ---- Text editing ----
+board.addEventListener('dblclick', e=>{
+  const t = e.target.closest('.obj-text'); if(!t) return;
+  const el = t.closest('.obj'); editing = el.dataset.id;
+  t.classList.add('editing'); t.contentEditable='true'; t.focus();
+  const r=document.createRange(); r.selectNodeContents(t); const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+});
+function commitEdit(){
+  if(!editing) return;
+  const el=board.querySelector('.obj[data-id="'+editing+'"]'); const t=el&&el.querySelector('.obj-text');
+  if(t){ const o=obj(editing); if(o){ o.text=t.innerText.trim(); } t.classList.remove('editing'); t.contentEditable='false'; }
+  editing=null; persist();
+}
+board.addEventListener('focusout', e=>{ if(e.target.classList && e.target.classList.contains('obj-text')) commitEdit(); });
+
+// ---- Score table edits ----
+board.addEventListener('input', e=>{
+  const t=e.target;
+  if(t.classList.contains('tname')){ state.skills[+t.dataset.i].n=t.value; syncChart(); persist(); }
+  else if(t.classList.contains('tnum')){ const i=+t.dataset.i,f=t.dataset.f; let v=clamp(parseFloat(t.value)||0,0,5); state.skills[i][f]=v; syncChart(); persist(); }
+});
+board.addEventListener('click', e=>{
+  const add=e.target.closest('#addSkill');
+  if(add){ state.skills.push({n:'New skill', cur:2, tg:4}); rebuildTable(); syncChart(); persist(); return; }
+  const del=e.target.closest('.tdel');
+  if(del){ if(state.skills.length<=3){ toast('Keep at least 3 skills'); return; } state.skills.splice(+del.dataset.del,1); rebuildTable(); syncChart(); persist(); }
+});
+function rebuildTable(){ const el=board.querySelector('.obj[data-id="table"]'); if(el){ el.innerHTML=tableHTML(); decorate(); } }
+
+// ---- Add objects ----
+function addObj(o){ o.id=uid(); o.z=++state.nextZ; state.objects.push(o); renderBoard(); select(o.id); persist(); }
+$('#toolbar').addEventListener('click', e=>{
+  const b=e.target.closest('[data-add]'); if(!b) return;
+  const t=b.dataset.add;
+  if(t==='text') addObj({type:'text', x:0.30, y:0.42, w:0.24, size:22, bold:false, color:'#1B2A3A', text:'Text'});
+  else if(t==='rect') addObj({type:'rect', x:0.30, y:0.40, w:0.22, h:0.16, color:state.accent, fill:hexA(state.accent,0.06), round:true});
+  else if(t==='line') addObj({type:'line', x1:0.30, y1:0.50, x2:0.46, y2:0.50, arrow:false, color:state.accent});
+  else if(t==='arrow') addObj({type:'line', x1:0.30, y1:0.55, x2:0.46, y2:0.55, arrow:true, color:state.accent});
+  else if(t==='image') $('#imgFile').click();
+});
+$('#imgFile').addEventListener('change', e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ addObj({type:'image', x:0.30, y:0.30, w:0.22, src:r.result}); };
+  r.readAsDataURL(f); e.target.value='';
+});
+
+// ---- Delete ----
+function deleteObj(id){ if(SINGLETONS.includes(id)) return; state.objects=state.objects.filter(o=>o.id!==id); if(selected===id) selected=null; renderBoard(); persist(); }
+document.addEventListener('keydown', e=>{
+  if((e.key==='Delete'||e.key==='Backspace') && selected && !editing){
+    const a=document.activeElement; if(a&&a.matches('input,[contenteditable="true"]')) return;
+    e.preventDefault(); deleteObj(selected);
+  }
+});
+
+// ---- Accent color ----
+$('#accent').addEventListener('input', e=>{
+  state.accent=e.target.value;
+  document.documentElement.style.setProperty('--accent', state.accent);
+  document.documentElement.style.setProperty('--accent-deep', mix(state.accent,'#000000',0.25));
+  document.documentElement.style.setProperty('--sel', state.accent);
+  syncChart(); persist();
+});
+
+// ---- Export / Import / Reset / PNG ----
+function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1700); }
+$('#exp').addEventListener('click', ()=>{
+  const a=document.createElement('a'); a.download='ba-canvas.json';
+  a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(state,null,2)); a.click(); toast('Exported');
+});
+$('#imp').addEventListener('click', ()=>$('#impFile').click());
+$('#impFile').addEventListener('change', e=>{
+  const f=e.target.files[0]; if(!f) return; const r=new FileReader();
+  r.onload=()=>{ try{ const s=JSON.parse(r.result); if(!s||!Array.isArray(s.objects)||!Array.isArray(s.skills)) throw 0;
+    state=Object.assign(defaultState(), s); ensureSingletons(); selected=null; applyAccent(); sizeBoard(); persist(); toast('Imported');
+  }catch(err){ toast('Invalid file'); } e.target.value=''; };
   r.readAsText(f);
 });
-
-document.getElementById('reset').addEventListener('click', ()=>{
-  if(!confirm('Restore default content, scores, layout and appearance? Saved team profiles are kept; free notes are cleared.')) return;
-  state = {skills: clone(DEFAULTS), theme: clone(THEME_DEF), texts: {}, profiles: state.profiles, notes: [], layout: clone(LAYOUT_DEF)};
-  persist(); location.reload(); // reload restores the default page texts
+$('#reset').addEventListener('click', ()=>{ if(!confirm('Reset the whole canvas to defaults?')) return; state=defaultState(); selected=null; applyAccent(); sizeBoard(); persist(); toast('Reset'); });
+$('#png').addEventListener('click', ()=>{
+  if(typeof html2canvas!=='function'){ toast('Image library not loaded'); return; }
+  const wasSel=selected; selected=null; decorate(); document.body.classList.add('capturing');
+  html2canvas(board, {backgroundColor:'#FFFFFF', scale:2, useCORS:true})
+    .then(c=>{ const a=document.createElement('a'); a.download='ba-skill-radar.png'; a.href=c.toDataURL('image/png'); a.click(); toast('PNG downloaded'); })
+    .catch(()=>toast('Could not render image'))
+    .finally(()=>{ document.body.classList.remove('capturing'); selected=wasSel; decorate(); });
 });
 
-// ===== Page layout: wrap reorderable blocks, drag to reorder, swap chart/controls =====
-const WRAP = document.querySelector('.wrap');
-WRAP.style.position = 'relative'; // anchor for absolutely-positioned free notes
-const SECT_SEL = {scale:'.scale', grid:'.grid', note:'.note'};
-const SECTS = {};
-BLOCK_KEYS.forEach(k=>{
-  const el = document.querySelector(SECT_SEL[k]);
-  const sec = document.createElement('div'); sec.className = 'sect'; sec.dataset.block = k;
-  el.parentNode.insertBefore(sec, el); sec.appendChild(el);
-  const grip = document.createElement('span'); grip.className = 'blockgrip'; grip.textContent = '⠿ drag block';
-  sec.insertBefore(grip, el);
-  SECTS[k] = sec;
-});
-// Capture the two grid cards so the column order can be swapped deterministically
-const gridEl = SECTS.grid.querySelector('.grid');
-const cardChart = gridEl.children[0], cardCtrl = gridEl.children[1];
-function applyLayout(){
-  state.layout.blocks.forEach(k=>{ if(SECTS[k]) WRAP.appendChild(SECTS[k]); });
-  if(state.layout.swapCols){ gridEl.appendChild(cardCtrl); gridEl.appendChild(cardChart); }
-  else { gridEl.appendChild(cardChart); gridEl.appendChild(cardCtrl); }
+function applyAccent(){
+  $('#accent').value=state.accent;
+  const r=document.documentElement.style;
+  r.setProperty('--accent', state.accent); r.setProperty('--accent-deep', mix(state.accent,'#000000',0.25)); r.setProperty('--sel', state.accent);
 }
-document.getElementById('swapCols').addEventListener('click', ()=>{
-  state.layout.swapCols = !state.layout.swapCols; applyLayout(); persist();
-});
 
-// Native drag-and-drop to reorder whole page blocks (handle = .blockgrip, customize mode only)
-let blockDrag = null;
-WRAP.addEventListener('pointerdown', e=>{
-  const g = e.target.closest('.blockgrip'); if(g) g.closest('.sect').setAttribute('draggable','true');
-});
-WRAP.addEventListener('dragstart', e=>{
-  const sec = e.target.closest('.sect');
-  if(!sec || sec.getAttribute('draggable')!=='true'){ e.preventDefault(); return; }
-  blockDrag = sec; sec.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move';
-});
-WRAP.addEventListener('dragover', e=>{
-  if(!blockDrag) return; e.preventDefault();
-  const sec = e.target.closest('.sect');
-  WRAP.querySelectorAll('.sect.dragover').forEach(s=>s.classList.remove('dragover'));
-  if(sec && sec!==blockDrag) sec.classList.add('dragover');
-});
-WRAP.addEventListener('drop', e=>{
-  if(!blockDrag) return; e.preventDefault();
-  const sec = e.target.closest('.sect');
-  if(sec && sec!==blockDrag){
-    const from = blockDrag.dataset.block;
-    const arr = state.layout.blocks.filter(k=>k!==from);
-    arr.splice(arr.indexOf(sec.dataset.block), 0, from);
-    state.layout.blocks = arr;
-    WRAP.insertBefore(blockDrag, sec); persist();
-  }
-});
-WRAP.addEventListener('dragend', ()=>{
-  if(!blockDrag) return;
-  blockDrag.classList.remove('dragging'); blockDrag.removeAttribute('draggable'); blockDrag = null;
-  WRAP.querySelectorAll('.sect.dragover').forEach(s=>s.classList.remove('dragover'));
-});
-
-// ===== Skill rows: drag to reorder (handle = .grip, customize mode only) — radar axes follow =====
-let skillDrag = null;
-rows.addEventListener('pointerdown', e=>{
-  const g = e.target.closest('[data-grip]'); if(g) g.closest('.row').setAttribute('draggable','true');
-});
-rows.addEventListener('dragstart', e=>{
-  const row = e.target.closest('.row');
-  if(!row || row.getAttribute('draggable')!=='true'){ e.preventDefault(); return; }
-  skillDrag = +row.id.slice(3); row.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move';
-});
-rows.addEventListener('dragover', e=>{
-  if(skillDrag==null) return; e.preventDefault();
-  const row = e.target.closest('.row');
-  rows.querySelectorAll('.row.dragover').forEach(r=>r.classList.remove('dragover'));
-  if(row && +row.id.slice(3)!==skillDrag) row.classList.add('dragover');
-});
-rows.addEventListener('drop', e=>{
-  if(skillDrag==null) return; e.preventDefault();
-  const row = e.target.closest('.row'); if(!row) return;
-  const to = +row.id.slice(3); if(to===skillDrag) return;
-  const [moved] = skills.splice(skillDrag,1); skills.splice(to,0,moved);
-  skillDrag = null; syncChart(false); render(); setMode(mode); persist();
-});
-rows.addEventListener('dragend', ()=>{
-  if(skillDrag==null){ rows.querySelectorAll('.dragover,.dragging').forEach(r=>r.classList.remove('dragover','dragging')); return; }
-  skillDrag = null; render();
-});
-// Release any leftover draggable flag after a plain click on a handle (no drag occurred)
-document.addEventListener('pointerup', ()=>{
-  document.querySelectorAll('.row[draggable="true"],.sect[draggable="true"]').forEach(el=>{
-    if(!el.classList.contains('dragging')) el.removeAttribute('draggable');
-  });
-});
-
-// ===== Free-floating annotation notes: add / drag anywhere / edit / delete =====
-function noteId(){ return 'n'+Math.random().toString(36).slice(2,8); }
-function renderNotes(){
-  WRAP.querySelectorAll('.note-box').forEach(n=>n.remove());
-  state.notes.forEach(n=>{
-    if(!n.id) n.id = noteId();
-    const box = document.createElement('div'); box.className = 'note-box'; box.dataset.note = n.id;
-    box.style.left = (n.x||40)+'px'; box.style.top = (n.y||40)+'px';
-    box.innerHTML = '<div class="nb-bar"><span class="nb-grip">⠿</span><button class="nb-del" type="button" title="Delete note">✕</button></div>'
-      + '<div class="nb-body" contenteditable="true"></div>';
-    box.querySelector('.nb-body').textContent = n.text||'';
-    WRAP.appendChild(box);
-  });
-}
-document.getElementById('note').addEventListener('click', ()=>{
-  const n = {id:noteId(), x:60, y:90, text:'Note…'}; state.notes.push(n); renderNotes(); persist();
-  const b = WRAP.querySelector('[data-note="'+n.id+'"] .nb-body');
-  if(b){ b.focus(); window.getSelection().selectAllChildren(b); }
-});
-WRAP.addEventListener('focusout', e=>{
-  const body = e.target.closest('.nb-body'); if(!body) return;
-  const n = state.notes.find(x=>x.id===body.closest('[data-note]').dataset.note);
-  if(n){ n.text = body.textContent.trim(); persist(); }
-});
-WRAP.addEventListener('click', e=>{
-  const del = e.target.closest('.nb-del'); if(!del) return;
-  const id = del.closest('[data-note]').dataset.note;
-  state.notes = state.notes.filter(x=>x.id!==id); renderNotes(); persist();
-});
-// Pointer-drag a note by its title bar; coords are relative to .wrap so they survive in the page PNG
-let noteDrag = null;
-WRAP.addEventListener('pointerdown', e=>{
-  const bar = e.target.closest('.nb-bar'); if(!bar || e.target.closest('.nb-del')) return;
-  const box = bar.closest('[data-note]');
-  const n = state.notes.find(x=>x.id===box.dataset.note); if(!n) return;
-  const r = WRAP.getBoundingClientRect();
-  noteDrag = {n, box, dx:e.clientX-r.left-(n.x||0), dy:e.clientY-r.top-(n.y||0)};
-  box.style.zIndex = 40; if(bar.setPointerCapture) bar.setPointerCapture(e.pointerId); e.preventDefault();
-});
-WRAP.addEventListener('pointermove', e=>{
-  if(!noteDrag) return;
-  const r = WRAP.getBoundingClientRect();
-  const x = Math.max(0, Math.min(e.clientX-r.left-noteDrag.dx, r.width-40));
-  const y = Math.max(0, e.clientY-r.top-noteDrag.dy);
-  noteDrag.n.x = x; noteDrag.n.y = y; noteDrag.box.style.left = x+'px'; noteDrag.box.style.top = y+'px';
-});
-WRAP.addEventListener('pointerup', ()=>{ if(noteDrag){ noteDrag.box.style.zIndex = ''; persist(); noteDrag = null; } });
-
-// ===== Start blank: reset the CURRENT line to a neutral 3.0 to build it live with the team =====
-document.getElementById('blank').addEventListener('click', ()=>{
-  if(!confirm('Reset the CURRENT line to a neutral 3.0 across every skill? Targets are kept — use this to build the current line live with the team.')) return;
-  skills.forEach(s=>s.cur = 3); syncChart(false); render(); setMode('cur'); persist();
-  toast('Current line reset to 3.0');
-});
-
-// ===== Download the whole presentation (chart + notes + everything) as one PNG =====
-document.getElementById('pngAll').addEventListener('click', ()=>{
-  if(typeof html2canvas!=='function'){ toast('Image library not loaded (needs network)'); return; }
-  document.body.classList.add('capturing');
-  html2canvas(WRAP, {backgroundColor:getComputedStyle(document.body).backgroundColor||'#F3F5F6', scale:2, useCORS:true})
-    .then(c=>{ const a=document.createElement('a'); a.download='ba-skill-radar-page.png'; a.href=c.toDataURL('image/png'); a.click(); toast('Page image downloaded'); })
-    .catch(()=>toast('Could not render page image'))
-    .finally(()=>document.body.classList.remove('capturing'));
-});
-
-// ----- Init -----
-applyTexts(); applyLayout(); applyTheme(); render(); refreshProfiles(); renderNotes();
+// ---- Init ----
+let rt; window.addEventListener('resize', ()=>{ clearTimeout(rt); rt=setTimeout(sizeBoard,120); });
+applyAccent(); sizeBoard();
 </script>
 </body>
 </html>
