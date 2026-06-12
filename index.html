@@ -45,22 +45,25 @@ input[type=color]{width:30px; height:28px; border:1px solid var(--line); border-
 .obj-line .hit{pointer-events:stroke; cursor:grab; stroke:transparent; stroke-width:14;}
 
 /* widget cards (radar + table) */
-.widget{background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 1px 3px rgba(27,42,58,.05);}
+.widget{background:var(--card); border:1px solid #BBC6CE; border-radius:10px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 2px 12px rgba(27,42,58,.12);}
 .obj.widget{height:auto;}
 .w-head{display:flex; align-items:center; gap:6px; padding:6px 9px; background:#F7F9FA; border-bottom:1px solid var(--line); font-size:11.5px; font-weight:600; color:var(--muted); letter-spacing:.04em; text-transform:uppercase; cursor:grab; user-select:none;}
 .w-grip{color:#AEB8C0;}
 .w-body{padding:10px;}
 
-/* score table */
-.trow{display:grid; grid-template-columns:1fr 52px 52px 20px; gap:6px; align-items:center; padding:3px 0;}
+/* score table (slider style, like the original tool) */
+.tmode{display:inline-flex; gap:4px; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:3px; margin-bottom:9px;}
+.tmode button{border:none; background:transparent; padding:3px 12px; border-radius:6px; font-size:12px; color:var(--muted);}
+.tmode button.on{background:var(--card); color:var(--ink); border:1px solid var(--line); font-weight:500;}
+.trow{display:flex; align-items:center; gap:9px; padding:4px 0;}
 .trow + .trow{border-top:1px solid #F0F3F5;}
-.thead{font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; font-weight:600; padding-bottom:3px;}
-.tname{font-size:13px; border:none; background:transparent; color:var(--ink); font-family:inherit; padding:2px 0; outline:none; min-width:0;}
+.tname{flex:0 0 150px; font-size:13px; border:none; background:transparent; color:var(--ink); font-family:inherit; padding:2px 0; outline:none; min-width:0;}
 .tname:focus{border-bottom:1px solid var(--accent);}
-.tnum{width:100%; font-family:'IBM Plex Mono',monospace; font-size:12.5px; text-align:center; border:1px solid var(--line); border-radius:6px; padding:3px 2px; color:var(--ink); background:var(--card);}
-.tnum:focus{outline:1.5px solid var(--accent); outline-offset:-1px;}
-.tdel{border:none; background:none; color:#C0473030; color:#B3402A; cursor:pointer; font-size:12px; padding:0;}
-.taddrow{margin-top:7px;}
+.tslider{flex:1; accent-color:var(--accent); height:20px; min-width:60px;}
+.tval{flex:0 0 58px; text-align:right; font-size:12.5px; color:var(--muted);}
+.tval .ttg{color:var(--accent); font-weight:500;}
+.tdel{flex:none; border:none; background:none; color:#B3402A; cursor:pointer; font-size:12px; padding:0 2px;}
+.taddrow{margin-top:9px;}
 .tadd{font-size:12px; padding:4px 9px;}
 
 /* radar */
@@ -137,7 +140,7 @@ function defaultState(){
     nextZ: 10,
     objects: [
       {id:'title', type:'text', x:0.035, y:0.05, w:0.55, size:34, bold:true, color:'#1B2A3A', text:'BA Skill Radar', z:1},
-      {id:'table', type:'table', x:0.035, y:0.20, w:0.40, z:2},
+      {id:'table', type:'table', x:0.035, y:0.20, w:0.44, z:2},
       {id:'radar', type:'radar', x:0.50, y:0.16, w:0.45, h:0.70, z:3}
     ]
   };
@@ -193,7 +196,7 @@ function chartCfg(){
     options:{ responsive:true, maintainAspectRatio:false, animation:false,
       plugins:{legend:{display:true, labels:{boxWidth:12, font:{size:11}}}},
       scales:{ r:{ min:0, max:5, ticks:{stepSize:1, display:false}, pointLabels:{font:{size:Math.max(9, Math.round(11*SCALE()))}, color:'#1B2A3A'},
-        grid:{color:'rgba(27,42,58,0.1)'}, angleLines:{color:'rgba(27,42,58,0.1)'} } } }
+        grid:{color:'rgba(27,42,58,0.16)'}, angleLines:{color:'rgba(27,42,58,0.16)'} } } }
   };
 }
 function buildChart(){
@@ -264,18 +267,23 @@ function drawLine(el,o){ const b=lineBox(o);
     + '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+col+'" stroke-width="2.5" stroke-linecap="round"'+(o.arrow?' marker-end="url(#'+mid+')"':'')+'/>'
     + '</svg>'; }
 
-// ----- score table -----
+// ----- score table (slider style) -----
+let tableMode = 'cur'; // which line the sliders adjust: 'cur' or 'tg'
+function fmt(v){ return Number(v).toFixed(1); }
 function tableHTML(){
-  let rows = '<div class="trow thead"><span>Skill</span><span style="text-align:center">Cur</span><span style="text-align:center">Tgt</span><span></span></div>';
+  let rows = '';
   state.skills.forEach((s,i)=>{
     rows += '<div class="trow">'
       + '<input class="tname" data-i="'+i+'" value="'+esc(s.n)+'">'
-      + '<input class="tnum" type="number" min="1" max="5" step="0.5" data-f="cur" data-i="'+i+'" value="'+s.cur+'">'
-      + '<input class="tnum" type="number" min="1" max="5" step="0.5" data-f="tg" data-i="'+i+'" value="'+s.tg+'">'
+      + '<input class="tslider" type="range" min="1" max="5" step="0.5" data-i="'+i+'" value="'+(tableMode==='cur'?s.cur:s.tg)+'" aria-label="'+esc(s.n)+'">'
+      + '<span class="tval mono"><span class="tcur">'+fmt(s.cur)+'</span> → <span class="ttg">'+fmt(s.tg)+'</span></span>'
       + '<button class="tdel" data-del="'+i+'" title="Remove">✕</button></div>';
   });
+  const toggle = '<div class="tmode">'
+    + '<button data-mode="cur"'+(tableMode==='cur'?' class="on"':'')+'>Current</button>'
+    + '<button data-mode="tg"'+(tableMode==='tg'?' class="on"':'')+'>Target</button></div>';
   return '<div class="w-head"><span class="w-grip">⠿</span>Score table</div>'
-    + '<div class="w-body">'+rows+'<div class="taddrow"><button class="tadd" id="addSkill">+ Skill</button></div></div>';
+    + '<div class="w-body">'+toggle+rows+'<div class="taddrow"><button class="tadd" id="addSkill">+ Skill</button></div></div>';
 }
 
 // ---- Selection + handles ----
@@ -309,7 +317,7 @@ board.addEventListener('pointerdown', e=>{
   if(!el){ if(editing) commitEdit(); select(null); return; }
   const id = el.dataset.id, o = obj(id);
   // interacting with inputs / editing text → don't drag, just select
-  if(e.target.matches('input,button,.tname,.tnum') || (editing===id && e.target.closest('.obj-text'))){ select(id); return; }
+  if(e.target.matches('input,button') || (editing===id && e.target.closest('.obj-text'))){ select(id); return; }
   const headOnly = (o.type==='table'||o.type==='radar');
   if(handle){ select(id); startResize(e,o,handle.dataset.dir); return; }
   if(headOnly && !e.target.closest('.w-head')){ select(id); return; } // body of widget = interact, header = move
@@ -372,9 +380,18 @@ board.addEventListener('focusout', e=>{ if(e.target.classList && e.target.classL
 board.addEventListener('input', e=>{
   const t=e.target;
   if(t.classList.contains('tname')){ state.skills[+t.dataset.i].n=t.value; syncChart(); persist(); }
-  else if(t.classList.contains('tnum')){ const i=+t.dataset.i,f=t.dataset.f; let v=clamp(parseFloat(t.value)||0,0,5); state.skills[i][f]=v; syncChart(); persist(); }
+  else if(t.classList.contains('tslider')){
+    const i=+t.dataset.i, v=parseFloat(t.value); state.skills[i][tableMode]=v;
+    const row=t.closest('.trow'); row.querySelector('.tcur').textContent=fmt(state.skills[i].cur); row.querySelector('.ttg').textContent=fmt(state.skills[i].tg);
+    syncChart(); persist();
+  }
 });
 board.addEventListener('click', e=>{
+  const m=e.target.closest('[data-mode]');
+  if(m){ tableMode=m.dataset.mode;
+    board.querySelectorAll('.tmode button').forEach(b=>b.classList.toggle('on', b.dataset.mode===tableMode));
+    board.querySelectorAll('.tslider').forEach(sl=>{ sl.value=state.skills[+sl.dataset.i][tableMode]; });
+    return; }
   const add=e.target.closest('#addSkill');
   if(add){ state.skills.push({n:'New skill', cur:2, tg:4}); rebuildTable(); syncChart(); persist(); return; }
   const del=e.target.closest('.tdel');
